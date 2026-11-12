@@ -666,6 +666,7 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
       <div class="field"><button class="btn soft" id="changePin">Changer le code parent</button></div>
       <div class="field"><button class="linkish" id="resetAll">Effacer toutes les données</button></div>
       <p class="small">Les données restent uniquement sur cet appareil, dans ce navigateur.</p>
+      <p class="small">Sons : pluie (alex36917, CC BY), vagues (Luftrum, CC BY), oiseaux (kvgarlic, CC0), feu de cheminée (ezwa, domaine public), via Freesound, SoundBible et le projet Blanket.</p>
     </div>
   </section>
 </div>
@@ -700,7 +701,15 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
     {k:"shout", e:"📢", t:"J’ai envie de crier"}, {k:"hit", e:"💥", t:"J’ai envie de taper"},
     {k:"tears", e:"💧", t:"J’ai envie de pleurer"}, {k:"hide", e:"🙈", t:"J’ai envie de me cacher"}
   ];
-  var SOUNDS = [ {k:"rain", e:"🌧️", n:"La pluie"}, {k:"waves", e:"🌊", n:"Les vagues"}, {k:"wind", e:"🍃", n:"Le vent"}, {k:"soft", e:"🌙", n:"Bruit doux"} ];
+  var SOUNDS = [ {k:"rain", e:"🌧️", n:"La pluie", f:"son-pluie.mp3"}, {k:"waves", e:"🌊", n:"Les vagues", f:"son-vagues.mp3"}, {k:"birds", e:"🐦", n:"Les oiseaux", f:"son-oiseaux.mp3"}, {k:"fire", e:"🔥", n:"Le feu de cheminée", f:"son-feu.mp3"} ];
+  var sndBufs = {};
+  function loadSnd(s){
+    if (sndBufs[s.k]) return sndBufs[s.k];
+    sndBufs[s.k] = fetch(s.f).then(function(r){ if (!r.ok) throw 0; return r.arrayBuffer(); })
+      .then(function(ab){ return new Promise(function(ok, ko){ ac().decodeAudioData(ab, ok, ko); }); })
+      .catch(function(){ delete sndBufs[s.k]; return null; });
+    return sndBufs[s.k];
+  }
   var EMOJIS = ["🧸","🛏️","🎧","🎨","🧃","🐶","⚽","🚿"];
   function signInfo(k){ for (var i = 0; i < SIGNS.length; i++) if (SIGNS[i].k === k) return SIGNS[i]; return null; }
   function itemInfo(k){
@@ -723,7 +732,15 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
     "Tu as déjà réussi à te calmer avant. Tu peux le refaire.",
     "On en parlera plus tard, quand tu seras prêt.",
     "Tu as le droit d’être en colère. On cherche juste comment le dire sans te faire de mal.",
-    "On est là pour toi, même dans les moments difficiles."
+    "On est là pour toi, même dans les moments difficiles.",
+    "Ton cerveau fonctionne vite, c’est une force. Là, on lui laisse juste le temps de se poser.",
+    "Ce que tu ressens est réel, et ça a le droit d’exister.",
+    "Une chose à la fois. Pas besoin de tout régler maintenant.",
+    "Tu n’as pas besoin d’être parfait. Personne ne l’est.",
+    "Tu peux faire une pause. Ce n’est pas abandonner.",
+    "Ton corps se calme un peu plus à chaque respiration.",
+    "Tu comptes beaucoup pour nous, même dans tes mauvais moments.",
+    "Demain est un nouveau jour."
   ];
   var BASE_WORDS = [
     "Tu es en sécurité.",
@@ -733,7 +750,18 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
     "Tu n’es pas méchant. Tu es débordé, et ça arrive.",
     "On t’aime, même quand c’est difficile.",
     "Respire doucement. Tu fais de ton mieux.",
-    "Après la pluie, le soleil revient toujours."
+    "Après la pluie, le soleil revient toujours.",
+    "Ça va aller. On est ensemble.",
+    "Ce que tu ressens est normal. Ce n’est pas de ta faute.",
+    "Ton cerveau va très vite. On va l’aider à ralentir, tout doucement.",
+    "Tu n’as pas besoin d’être parfait. Tu as juste besoin de respirer.",
+    "Une chose à la fois. Tu y arrives.",
+    "Tu as le droit de faire une pause.",
+    "Même les super-héros ont besoin de se calmer parfois.",
+    "Essayer, c’est déjà être courageux.",
+    "Ton corps se calme un peu plus à chaque souffle.",
+    "Tu comptes beaucoup pour nous.",
+    "Demain est un nouveau jour."
   ];
   var MOVES_MOYEN = [
     {e:"🧱", t:"Pompes contre le mur : pousse fort, 10 fois", s:20},
@@ -1055,7 +1083,7 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
     var bubble = $("bubble"); bubble.classList.remove("in"); bubble.firstChild.textContent = A().inE; $("breatheCount").textContent = "";
     if (!crisis && (S.breathSeen || 0) < 3){ breathIntro(); return; }
     $("breatheIntro").hidden = true; $("breatheHelp").hidden = false;
-    var lead = (crisis ? head + " " : "On respire ensemble. ") + "Regarde la bulle. Quand elle grandit, tu inspires par le nez. Quand elle rétrécit, tu souffles par la bouche.";
+    var lead = (crisis ? head + " Ça va passer. " : "On respire ensemble. ") + "Regarde la bulle. Quand elle grandit, tu inspires par le nez. Quand elle rétrécit, tu souffles par la bouche.";
     $("breatheText").textContent = "Regarde la bulle…";
     bspeak(lead);
     later(breathRun, breathVoiceOn() ? (crisis ? 9500 : 7500) : 2000);
@@ -1278,7 +1306,9 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
       fillChoices($("choosePlan"), allItems());
       $("moreRow").hidden = true;
     }
-    speak(plan.length ? "Regarde ton plan de calme. Qu’est-ce qui t’aide ?" : "Qu’est-ce qui pourrait t’aider ?");
+    var again = session && session.checks && session.checks.length && session.checks[session.checks.length - 1] > 2;
+    if (again) $("chooseLead").textContent = "Ce n’est pas grave si ça prend du temps. On continue ensemble.";
+    speak((again ? "Ce n’est pas grave si ça prend du temps. On continue ensemble. " : "") + (plan.length ? "Regarde ton plan de calme. Qu’est-ce qui t’aide ?" : "Qu’est-ce qui pourrait t’aider ?"));
   };
   $("moreBtn").onclick = function(){ $("chooseMore").classList.add("on"); $("moreRow").hidden = true; };
 
@@ -1324,9 +1354,27 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
     for (var i = 0; i < len; i++){ var w = Math.random()*2 - 1; if (type === "brown"){ last = (last + 0.02*w) / 1.02; d[i] = last * 3.5; } else d[i] = w; }
     return (bufs[type] = b);
   }
+  var sndReq = 0;
   function playSound(kind){
     stopSound();
     var a; try { a = ac(); } catch(e){ return; }
+    var def = null; SOUNDS.forEach(function(s){ if (s.k === kind) def = s; });
+    if (def && def.f){
+      var req = ++sndReq; curSound = kind; refreshSoundUI();
+      loadSnd(def).then(function(buf){
+        if (req !== sndReq || curSound !== kind) return;
+        if (!buf){ synthSound(kind === "fire" ? "soft" : (kind === "birds" ? "wind" : kind)); return; }
+        var t2 = a.currentTime, m = a.createGain(), s = a.createBufferSource();
+        s.buffer = buf; s.loop = true; s.loopStart = 0.08; s.loopEnd = buf.duration - 0.08;
+        m.gain.setValueAtTime(0, t2); m.gain.linearRampToValueAtTime(1, t2 + 2); s.connect(m); m.connect(a.destination); s.start(0, 0.08);
+        snd = { master:m, nodes:[m, s] }; curSound = kind; refreshSoundUI();
+      });
+      return;
+    }
+    synthSound(kind);
+  }
+  function synthSound(kind){
+    var a = ac();
     var t = a.currentTime, master = a.createGain(), nodes = [master];
     master.gain.setValueAtTime(0, t); master.gain.linearRampToValueAtTime(1, t + 1.5); master.connect(a.destination);
     function src(type){ var s = a.createBufferSource(); s.buffer = noise(type); s.loop = true; s.start(); nodes.push(s); return s; }
@@ -1346,7 +1394,8 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
     snd = { master:master, nodes:nodes }; curSound = kind; refreshSoundUI();
   }
   function stopSound(){
-    if (!snd) return;
+    sndReq++;
+    if (!snd){ if (curSound){ curSound = null; refreshSoundUI(); } return; }
     var s = snd; snd = null; curSound = null;
     try { var t = AC.currentTime; s.master.gain.cancelScheduledValues(t); s.master.gain.setValueAtTime(s.master.gain.value, t); s.master.gain.linearRampToValueAtTime(0, t + .5); } catch(e){}
     setTimeout(function(){ s.nodes.forEach(function(n){ try { if (n.stop) n.stop(); } catch(e){} try { n.disconnect(); } catch(e){} }); }, 650);
@@ -1547,8 +1596,10 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
     }
     speak("Voici tes trophées.");
   };
+  var CHEERS = ["Tu peux être fier de toi.", "Tu as réussi à te calmer, c’est énorme.", "Chaque fois que tu fais ça, ton cerveau apprend.", "Tu deviens de plus en plus fort pour te calmer.", "On est fiers de toi."];
   INIT.bravo = function(){
-    $("bravoHead").textContent = "Bravo " + S.name + " !";
+    var cheer = CHEERS[Math.floor(Math.random() * CHEERS.length)];
+    $("bravoHead").textContent = "Bravo " + S.name + " !"; $("bravoTip").textContent = cheer;
     var inf = nextTrophyInfo();
     if (justTrophy){
       $("trophyWin").hidden = false; $("twE").textContent = justTrophy.e; $("twN").textContent = "Nouveau trophée : " + justTrophy.n + " !"; $("twD").textContent = justTrophy.d;
@@ -1558,7 +1609,7 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
     } else {
       $("trophyWin").hidden = true;
       $("bravoNext").textContent = "Encore " + inf.left + " étoile" + (inf.left > 1 ? "s" : "") + " pour gagner le trophée " + inf.next.e + " " + inf.next.n + ".";
-      speak("Bravo " + S.name + ". Tu as ramené le soleil. Encore " + inf.left + " étoile" + (inf.left > 1 ? "s" : "") + " pour ton prochain trophée.");
+      speak("Bravo " + S.name + ". Tu as ramené le soleil. " + cheer + " Encore " + inf.left + " étoile" + (inf.left > 1 ? "s" : "") + " pour ton prochain trophée.");
     }
   };
   INIT.home = function(){ if (session) finishSession(null); refreshTop(); };
