@@ -1342,7 +1342,7 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
   $("bodyOk").onclick = function(){
     if (session){ session.signs = uniq((session.signs || []).concat(bodySel)); go("choose"); }
     else { go(validPlan().length ? "plan" : "tools"); }
-    speak("Bien repéré ! Ton corps te prévient. C’est le bon moment pour te calmer.");
+    speak("Bien repéré ! Ton corps t’envoie un petit signal. On va l’aider ensemble, tout doucement.");
   };
 
   // ----- Sons calmes (générés, sans fichier) -----
