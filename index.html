@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mon coin calme</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Coin calme">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#E3EDF0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#132029" media="(prefers-color-scheme: dark)">
+
+<style>
+@font-face{font-family:"Baloo 2";font-weight:400;font-display:swap;src:url(baloo-2-latin-400-normal.woff2) format("woff2");}
+@font-face{font-family:"Baloo 2";font-weight:500;font-display:swap;src:url(baloo-2-latin-500-normal.woff2) format("woff2");}
+@font-face{font-family:"Baloo 2";font-weight:600;font-display:swap;src:url(baloo-2-latin-600-normal.woff2) format("woff2");}
+@font-face{font-family:"Baloo 2";font-weight:700;font-display:swap;src:url(baloo-2-latin-700-normal.woff2) format("woff2");}
+@font-face{font-family:"Baloo 2";font-weight:800;font-display:swap;src:url(baloo-2-latin-800-normal.woff2) format("woff2");}
+:root{
+  --bg:#E3EDF0; --surface:#F8FBFC; --surface2:#EEF4F6; --ink:#1F3446; --muted:#566B7B;
+  --sun:#F2C14E; --cloud:#B9CEDB; --wind:#8DBFA8; --rain:#6F92B8; --storm:#5E5B91;
+  --accent:#2F7A80; --accent-ink:#FFFFFF; --line:rgba(31,52,70,.14);
+  --bubble1:#BFE0E3; --bubble2:#8CC6CB;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#132029; --surface:#1B2B36; --surface2:#223543; --ink:#E5EEF2; --muted:#A5B7C3;
+    --sun:#E9B843; --cloud:#5F7A8C; --wind:#5E9C80; --rain:#4F74A0; --storm:#6F6BAA;
+    --accent:#5AB0B6; --accent-ink:#0F1C24; --line:rgba(229,238,242,.14);
+    --bubble1:#2D5A60; --bubble2:#3F7E85;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#132029; --surface:#1B2B36; --surface2:#223543; --ink:#E5EEF2; --muted:#A5B7C3;
+  --sun:#E9B843; --cloud:#5F7A8C; --wind:#5E9C80; --rain:#4F74A0; --storm:#6F6BAA;
+  --accent:#5AB0B6; --accent-ink:#0F1C24; --line:rgba(229,238,242,.14);
+  --bubble1:#2D5A60; --bubble2:#3F7E85;
+  color-scheme: dark;
+}
+:root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+*,*::before,*::after{ box-sizing:inherit; }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); }
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Baloo 2", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  font-size:18px; line-height:1.45; -webkit-tap-highlight-color:transparent;
+}
+body::before{ content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:10; background:var(--bg); }
+button{ font:inherit; color:inherit; cursor:pointer; }
+button:focus-visible, input:focus-visible, textarea:focus-visible{ outline:3px solid var(--accent); outline-offset:3px; }
+.wrap{ max-width:560px; margin:0 auto; padding:12px 18px 40px; }
+header.top{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:5; background:var(--bg);
+  display:flex; align-items:center; justify-content:space-between; padding:10px 0 8px;
+}
+.iconbtn{ border:0; background:var(--surface); border-radius:999px; min-width:48px; height:48px; padding:0 14px; font-size:22px; display:inline-flex; align-items:center; gap:6px; }
+.stars{ font-weight:700; font-size:18px; background:var(--surface); border:0; border-radius:999px; padding:8px 16px; min-height:44px; }
+/* Trophées */
+.trophy-win{ text-align:center; background:var(--surface); border-radius:28px; padding:18px; margin:16px 0; }
+.trophy-win .big{ font-size:96px; line-height:1.1; display:inline-block; animation:tPop .7s cubic-bezier(.2,1.6,.4,1) both; }
+.trophy-win h2{ margin:6px 0 2px; }
+@keyframes tPop{ from{ transform:scale(.2) rotate(-20deg); opacity:0; } to{ transform:none; opacity:1; } }
+.progress{ height:16px; border-radius:999px; background:var(--surface2); overflow:hidden; margin:8px 0 4px; }
+.progress i{ display:block; height:100%; background:var(--sun); border-radius:999px; }
+.trophy-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; margin-top:14px; }
+.trophy{ background:var(--surface); border-radius:22px; padding:14px 10px; text-align:center; }
+.trophy .e{ font-size:52px; line-height:1.1; display:block; }
+.trophy b{ display:block; font-size:18px; line-height:1.15; margin-top:4px; }
+.trophy small{ color:var(--muted); font-size:15px; }
+.trophy.locked .e{ filter:grayscale(1); opacity:.35; }
+.trophy.locked b{ color:var(--muted); }
+.trophy.next{ box-shadow:inset 0 0 0 3px var(--sun); }
+.screen{ display:none; }
+.screen.on{ display:block; }
+h1{ font-size:34px; line-height:1.1; margin:14px 0 6px; font-weight:800; letter-spacing:-.01em; }
+h2{ font-size:26px; line-height:1.15; margin:10px 0 6px; font-weight:700; }
+p.lead{ font-size:20px; color:var(--muted); margin:0 0 18px; }
+.big-phrase{ font-size:30px; font-weight:700; line-height:1.2; text-align:center; margin:18px 0 6px; }
+.center{ text-align:center; }
+
+/* Météo intérieure */
+.weather{ display:grid; gap:12px; margin-top:8px; }
+.w{
+  display:grid; grid-template-columns:64px 1fr; align-items:center; gap:12px;
+  border:0; text-align:left; border-radius:22px; padding:12px 16px; min-height:78px;
+  background:var(--surface); position:relative; overflow:hidden;
+}
+.w::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:10px; background:var(--c); }
+.w .e{ font-size:42px; line-height:1; text-align:center; }
+.w b{ display:block; font-size:22px; line-height:1.1; }
+.w span{ color:var(--muted); font-size:17px; }
+.w:active{ transform:scale(.98); }
+.w[data-l="1"]{ --c:var(--sun); } .w[data-l="2"]{ --c:var(--cloud); } .w[data-l="3"]{ --c:var(--wind); }
+.w[data-l="4"]{ --c:var(--rain); } .w[data-l="5"]{ --c:var(--storm); }
+.w[data-l="5"]{ background:var(--storm); color:#fff; }
+.w[data-l="5"] span{ color:rgba(255,255,255,.85); }
+
+.row{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:22px; }
+.btn{ border:0; border-radius:999px; padding:14px 26px; font-size:20px; font-weight:700; background:var(--accent); color:var(--accent-ink); min-height:56px; }
+.btn.soft{ background:var(--surface); color:var(--ink); }
+.linkish{ border:0; background:none; color:var(--muted); text-decoration:underline; font-size:17px; padding:10px; }
+
+/* Respiration : la bulle */
+.breath-stage{ display:grid; place-items:center; height:min(70vw,340px); margin:10px 0; }
+#bubble{
+  width:min(70vw,320px); aspect-ratio:1; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--surface) 0 12%, var(--bubble1) 35%, var(--bubble2) 100%);
+  display:grid; place-items:center; transform:scale(.5);
+  transition:transform 5s cubic-bezier(.45,.05,.55,.95);
+  box-shadow:0 0 0 10px color-mix(in srgb, var(--bubble1) 40%, transparent);
+}
+#bubble.in{ transform:scale(1); transition-duration:3s; }
+#bubble span{ font-size:54px; transform:scale(1.6); }
+#breatheText{ font-size:28px; font-weight:700; text-align:center; min-height:42px; }
+#bubble span{ font-weight:800; }
+#breatheExplain .bx{ display:block; padding:10px 0; border-bottom:1px solid var(--line); }
+#breatheExplain .bx:last-child{ border-bottom:0; }
+#breatheExplain b{ display:block; font-size:22px; }
+#breatheExplain i{ display:block; font-style:normal; color:var(--accent); font-weight:700; font-size:17px; }
+#breatheCount{ text-align:center; color:var(--muted); }
+
+/* Carré du calme */
+.square{ position:relative; width:min(72vw,260px); aspect-ratio:1; margin:26px auto 10px; border:6px solid var(--cloud); border-radius:18px; }
+#sqDot{ position:absolute; width:34px; height:34px; border-radius:50%; background:var(--accent); left:-20px; top:calc(100% - 14px); transition:left 3s linear, top 3s linear; }
+#sqText{ font-size:28px; font-weight:700; text-align:center; min-height:42px; }
+
+/* 5 sens */
+.ground-num{ font-size:120px; font-weight:800; line-height:1; text-align:center; color:var(--accent); }
+.dots{ display:flex; justify-content:center; gap:12px; margin:16px 0; }
+.dot{ width:46px; height:46px; border-radius:50%; border:3px solid var(--accent); background:transparent; }
+.dot.on{ background:var(--accent); }
+
+/* Bulles */
+.pop-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:12px; }
+.pop{ aspect-ratio:1; border-radius:50%; border:0; background:radial-gradient(circle at 35% 30%, var(--surface) 0 14%, var(--bubble1) 40%, var(--bubble2)); transition:transform .15s; }
+.pop.popped{ transform:scale(.25); opacity:.25; pointer-events:none; }
+
+/* Ballon */
+select{ width:100%; border:2px solid var(--line); background:var(--surface); color:var(--ink); border-radius:16px; padding:12px 14px; font:inherit; font-size:18px; }
+input[type=range]{ width:100%; accent-color:var(--accent); }
+textarea, input[type=text]{ width:100%; border:2px solid var(--line); background:var(--surface); color:var(--ink); border-radius:16px; padding:12px 14px; font:inherit; font-size:19px; }
+textarea{ min-height:96px; resize:vertical; }
+.balloon-zone{ height:250px; position:relative; overflow:hidden; }
+#balloon{ position:absolute; left:50%; bottom:10px; transform:translateX(-50%); text-align:center; transition:transform 4.5s ease-in, opacity 4.5s ease-in; }
+#balloon .b{ width:130px; height:150px; border-radius:50% 50% 48% 48%; background:var(--storm); margin:0 auto; display:grid; place-items:center; color:#fff; padding:14px; font-size:15px; line-height:1.2; overflow:hidden; word-break:break-word; }
+#balloon .s{ width:2px; height:70px; background:var(--muted); margin:0 auto; }
+#balloon.away{ transform:translate(-50%,-520px); opacity:0; }
+
+/* Bouger */
+.kid-wrap{ display:flex; justify-content:center; margin-top:6px; }
+.kid{ width:min(62vw,240px); height:auto; overflow:visible; }
+.kid *{ transform-box:view-box; }
+.kid .ground{ stroke:var(--line); stroke-width:3; stroke-linecap:round; }
+.kid .wall-r, .kid .wall-b{ display:none; fill:var(--cloud); }
+.kid.wall-r .wall-r, .kid.wall-b .wall-b{ display:block; }
+.kid .wall-b{ opacity:.45; }
+.kid .k-bag{ display:none; } .kid.bag .k-bag{ display:block; }
+.kid .k-bag rect{ fill:var(--sun); } .kid .k-bag line{ stroke:#B8892A; stroke-width:4; stroke-linecap:round; }
+.kid .skin{ stroke:#EDBF96; stroke-width:9; stroke-linecap:round; fill:none; }
+.kid .hand, .kid .head{ fill:#F1C7A1; }
+.kid .pant{ stroke:#3F5F7E; stroke-width:11; stroke-linecap:round; }
+.kid .shoe{ fill:var(--ink); }
+.kid .torso{ fill:var(--accent); }
+.kid .hair{ fill:#5B3A29; }
+.kid .eye{ fill:#1F3446; } .kid .smile{ stroke:#1F3446; stroke-width:2.4; fill:none; stroke-linecap:round; }
+.kid .k-all{ transform-origin:100px 198px; }
+.kid .tl{ transform-origin:93px 128px; } .kid .sl{ transform-origin:93px 162px; }
+.kid .tr{ transform-origin:107px 128px; } .kid .sr{ transform-origin:107px 162px; }
+.kid .al{ transform-origin:80px 84px; } .kid .fl{ transform-origin:78px 107px; }
+.kid .ar{ transform-origin:120px 84px; } .kid .fr{ transform-origin:122px 107px; }
+.kid .torso{ transform-origin:100px 104px; }
+.kid .hand{ transform-origin:center; transform-box:fill-box; }
+/* sauts en étoile */
+.a-star .k-all{ animation:kStarAll .45s ease-in-out infinite alternate; }
+.a-star .al{ animation:kStarAL .45s ease-in-out infinite alternate; } .a-star .ar{ animation:kStarAR .45s ease-in-out infinite alternate; }
+.a-star .tl{ animation:kStarTL .45s ease-in-out infinite alternate; } .a-star .tr{ animation:kStarTR .45s ease-in-out infinite alternate; }
+@keyframes kStarAll{ to{ transform:translateY(-16px); } } @keyframes kStarAL{ to{ transform:rotate(150deg); } } @keyframes kStarAR{ to{ transform:rotate(-150deg); } }
+@keyframes kStarTL{ to{ transform:rotate(22deg); } } @keyframes kStarTR{ to{ transform:rotate(-22deg); } }
+/* kangourou */
+.a-jump .k-all{ animation:kJump 1s ease-in-out infinite; }
+.a-jump .tl{ animation:kJumpTL 1s ease-in-out infinite; } .a-jump .tr{ animation:kJumpTR 1s ease-in-out infinite; }
+.a-jump .sl{ animation:kJumpSL 1s ease-in-out infinite; } .a-jump .sr{ animation:kJumpSR 1s ease-in-out infinite; }
+.a-jump .al{ animation:kJumpAL 1s ease-in-out infinite; } .a-jump .ar{ animation:kJumpAR 1s ease-in-out infinite; }
+@keyframes kJump{ 0%,100%{ transform:none; } 30%{ transform:translateY(14px); } 60%{ transform:translateY(-38px); } }
+@keyframes kJumpTL{ 30%{ transform:rotate(32deg); } } @keyframes kJumpTR{ 30%{ transform:rotate(-32deg); } }
+@keyframes kJumpSL{ 30%{ transform:rotate(-60deg); } } @keyframes kJumpSR{ 30%{ transform:rotate(60deg); } }
+@keyframes kJumpAL{ 60%{ transform:rotate(45deg); } } @keyframes kJumpAR{ 60%{ transform:rotate(-45deg); } }
+/* chien mouillé */
+.a-shake .k-all{ animation:kShake .13s linear infinite alternate; }
+.a-shake .al{ animation:kShakeA .13s linear infinite alternate; } .a-shake .ar{ animation:kShakeB .13s linear infinite alternate; }
+@keyframes kShake{ from{ transform:rotate(-7deg); } to{ transform:rotate(7deg); } }
+@keyframes kShakeA{ from{ transform:rotate(10deg); } to{ transform:rotate(45deg); } } @keyframes kShakeB{ from{ transform:rotate(-10deg); } to{ transform:rotate(-45deg); } }
+/* statue */
+.a-statue .al{ transform:rotate(85deg); } .a-statue .ar{ transform:rotate(-40deg); } .a-statue .fr{ transform:rotate(-80deg); }
+.a-statue .tl{ transform:rotate(12deg); }
+/* serrer / contracter */
+.a-squeeze .al{ animation:kSqAL 3s ease-in-out infinite; } .a-squeeze .ar{ animation:kSqAR 3s ease-in-out infinite; }
+.a-squeeze .fl{ animation:kSqFL 3s ease-in-out infinite; } .a-squeeze .fr{ animation:kSqFR 3s ease-in-out infinite; }
+.a-squeeze .hand{ animation:kSqH 3s ease-in-out infinite; } .a-squeeze .k-all{ animation:kSqAll 3s linear infinite; }
+@keyframes kSqAL{ 15%,50%{ transform:rotate(80deg); } 0%,70%,100%{ transform:none; } } @keyframes kSqAR{ 15%,50%{ transform:rotate(-80deg); } 0%,70%,100%{ transform:none; } }
+@keyframes kSqFL{ 15%,50%{ transform:rotate(100deg); } 0%,70%,100%{ transform:none; } } @keyframes kSqFR{ 15%,50%{ transform:rotate(-100deg); } 0%,70%,100%{ transform:none; } }
+@keyframes kSqH{ 15%,50%{ transform:scale(1.5); } 0%,70%,100%{ transform:none; } }
+@keyframes kSqAll{ 20%,30%,40%{ transform:translateX(-1.5px); } 25%,35%,45%{ transform:translateX(1.5px); } 0%,50%,100%{ transform:none; } }
+/* marcher */
+.a-walk .k-all{ animation:kBob .4s ease-in-out infinite alternate; }
+.a-walk .tl{ animation:kLift .8s ease-in-out infinite; } .a-walk .tr{ animation:kLift .8s ease-in-out infinite -.4s; }
+.a-walk .al{ animation:kSwingL .8s ease-in-out infinite; } .a-walk .ar{ animation:kSwingR .8s ease-in-out infinite; }
+.a-walk.slow .k-all{ animation-duration:.9s; } .a-walk.slow .tl, .a-walk.slow .tr, .a-walk.slow .al, .a-walk.slow .ar{ animation-duration:1.8s; } .a-walk.slow .tr{ animation-delay:-.9s; }
+@keyframes kBob{ to{ transform:translateY(-4px); } }
+@keyframes kLift{ 0%,50%,100%{ transform:none; } 25%{ transform:scaleY(.72); } }
+@keyframes kSwingL{ 0%,100%{ transform:rotate(-18deg); } 50%{ transform:rotate(18deg); } } @keyframes kSwingR{ 0%,100%{ transform:rotate(-18deg); } 50%{ transform:rotate(18deg); } }
+/* crabe */
+.a-crab .k-all{ animation:kCrab 1.4s ease-in-out infinite alternate; }
+.a-crab .tl{ transform:rotate(55deg); } .a-crab .sl{ transform:rotate(-55deg); } .a-crab .tr{ transform:rotate(-55deg); } .a-crab .sr{ transform:rotate(55deg); }
+.a-crab .al{ transform:rotate(55deg); } .a-crab .ar{ transform:rotate(-55deg); }
+@keyframes kCrab{ from{ transform:translate(-24px, 24px); } to{ transform:translate(24px, 24px); } }
+/* ballon */
+.a-inflate .torso{ animation:kInfl 3s ease-in-out infinite alternate; }
+.a-inflate .al{ animation:kInflA 3s ease-in-out infinite alternate; } .a-inflate .ar{ animation:kInflB 3s ease-in-out infinite alternate; }
+.a-inflate .k-all{ animation:kInflAll 3s ease-in-out infinite alternate; }
+@keyframes kInfl{ to{ transform:scaleX(1.45); } } @keyframes kInflA{ to{ transform:rotate(40deg); } } @keyframes kInflB{ to{ transform:rotate(-40deg); } }
+@keyframes kInflAll{ to{ transform:scale(1.06); } }
+/* pompes contre le mur */
+.a-push .k-all{ animation:kPush 1.1s ease-in-out infinite alternate; }
+.a-push .al{ transform:rotate(-72deg); } .a-push .ar{ transform:rotate(-80deg); }
+.a-push .fl, .a-push .fr{ animation:kPushF 1.1s ease-in-out infinite alternate; }
+@keyframes kPush{ from{ transform:translateX(-22px) rotate(8deg); } to{ transform:translateX(-22px) rotate(16deg); } }
+@keyframes kPushF{ from{ transform:none; } to{ transform:rotate(-40deg); } }
+/* chaise */
+.a-chair .k-all{ animation:kChair .12s linear infinite alternate; }
+.a-chair .tl{ transform:rotate(68deg); } .a-chair .sl{ transform:rotate(-68deg); } .a-chair .tr{ transform:rotate(-68deg); } .a-chair .sr{ transform:rotate(68deg); }
+.a-chair .al{ transform:rotate(14deg); } .a-chair .ar{ transform:rotate(-14deg); }
+@keyframes kChair{ from{ transform:translate(-.7px, 30px); } to{ transform:translate(.7px, 30px); } }
+/* planche */
+.a-plank .k-all{ animation:kPlank 2s ease-in-out infinite alternate; }
+.a-plank .al, .a-plank .ar{ transform:rotate(70deg); } .a-plank .ar{ display:none; }
+@keyframes kPlank{ from{ transform:translate(64px, -8px) rotate(-70deg) scale(.85); } to{ transform:translate(64px, -10px) rotate(-70deg) scale(.85); } }
+
+/* 5 sens : images d’indices */
+.hints{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-top:8px; }
+.hint{ border:0; background:var(--surface); border-radius:16px; padding:8px 4px; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:14px; line-height:1.15; min-height:84px; }
+.hint .e{ font-size:34px; line-height:1.1; }
+.hint.on{ box-shadow:inset 0 0 0 3px var(--accent); background:color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+.hint-label{ text-align:center; color:var(--muted); margin:14px 0 0; font-size:17px; }
+
+#moveTimer{ font-size:72px; font-weight:800; text-align:center; color:var(--accent); min-height:90px; }
+
+/* Choix */
+.choices{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+.choice{ border:0; background:var(--surface); border-radius:22px; padding:16px 10px; min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:19px; font-weight:600; }
+.choice .e{ font-size:44px; line-height:1; }
+
+/* Mots doux */
+.card-word{ background:var(--surface); border-radius:28px; padding:34px 22px; min-height:220px; display:grid; place-items:center; text-align:center; font-size:30px; font-weight:700; line-height:1.2; margin-top:12px; }
+
+.sun-big{ font-size:120px; text-align:center; line-height:1; margin-top:20px; }
+
+/* Parent */
+.parent-btn{ position:relative; overflow:hidden; border:0; background:none; color:var(--muted); font-size:16px; padding:12px 18px; border-radius:999px; display:block; margin:26px auto 0; }
+.parent-btn i{ position:absolute; inset:0; background:var(--surface); transform:scaleX(0); transform-origin:left; z-index:-1; }
+.parent-btn.hold i{ transform:scaleX(1); transition:transform 1.2s linear; }
+.parent-btn{ isolation:isolate; }
+.tabs{ display:flex; gap:6px; overflow-x:auto; margin:8px 0 14px; padding-bottom:4px; }
+.tab{ border:0; background:var(--surface); border-radius:999px; padding:8px 16px; font-size:17px; white-space:nowrap; }
+.tab.on{ background:var(--ink); color:var(--bg); }
+.pane{ display:none; } .pane.on{ display:block; }
+.guide{ background:var(--surface); border-radius:20px; padding:4px 20px; margin-bottom:14px; }
+.guide ol{ padding-left:22px; margin:12px 0; }
+.guide li{ margin:10px 0; }
+.guide li b{ display:block; }
+.say{ display:grid; gap:10px; grid-template-columns:1fr; }
+@media (min-width:520px){ .say{ grid-template-columns:1fr 1fr; } }
+.say div{ background:var(--surface); border-radius:18px; padding:12px 16px; }
+.say h3{ margin:4px 0 6px; font-size:19px; }
+.say ul{ margin:0; padding-left:20px; }
+.say li{ margin:6px 0; }
+.entry{ background:var(--surface); border-radius:18px; padding:12px 16px; margin-bottom:10px; }
+.entry .meta{ display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; font-weight:600; }
+.entry .tools{ color:var(--muted); font-size:16px; margin:4px 0 8px; }
+.entry textarea{ min-height:60px; font-size:16px; }
+.summary{ background:var(--surface2); border-radius:18px; padding:12px 16px; margin-bottom:12px; }
+.small{ font-size:16px; color:var(--muted); }
+.field{ margin:14px 0; }
+.field label{ display:block; font-weight:600; margin-bottom:6px; }
+.toggle{ display:flex; align-items:center; gap:10px; font-size:18px; }
+.toggle input{ width:26px; height:26px; }
+.mylist{ padding-left:20px; }
+.mylist li{ margin:4px 0; }
+.mylist button{ border:0; background:none; color:var(--muted); text-decoration:underline; font-size:15px; }
+/* Plan de calme */
+.chips{ display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+.chip{ border:2px solid var(--line); background:var(--surface); border-radius:999px; padding:8px 14px; font-size:17px; display:inline-flex; gap:6px; align-items:center; }
+button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+.chip .n{ font-weight:800; color:var(--accent); }
+.plan-card{ background:var(--surface); border-radius:24px; padding:12px 18px; margin:12px 0; }
+.plan-card h3{ margin:2px 0 6px; font-size:21px; }
+.plan-card .choices{ margin-top:4px; }
+.plan-card .choice{ background:var(--surface2); }
+.choice.on{ box-shadow:inset 0 0 0 4px var(--accent); background:color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.more{ display:none; } .more.on{ display:grid; }
+.pane h3{ font-size:20px; margin:18px 0 4px; }
+
+/* Bocal à paillettes */
+.lid{ width:min(48vw,180px); height:22px; margin:8px auto -5px; background:var(--cloud); border-radius:10px 10px 4px 4px; }
+.jar{ position:relative; width:min(76vw,290px); height:min(96vw,380px); margin:0 auto; border-radius:34px 34px 46px 46px; background:var(--surface2); border:5px solid var(--cloud); overflow:hidden; touch-action:none; cursor:pointer; }
+.jar canvas{ width:100%; height:100%; display:block; }
+#jarText{ font-size:22px; font-weight:600; text-align:center; min-height:64px; margin-top:10px; }
+.sound-chips{ justify-content:center; }
+
+/* Minuteur visuel */
+.dial{ width:min(74vw,290px); aspect-ratio:1; border-radius:50%; margin:14px auto; display:grid; place-items:center;
+  background:conic-gradient(var(--accent) var(--deg,360deg), var(--surface2) 0); }
+.dial span{ background:var(--bg); width:64%; aspect-ratio:1; border-radius:50%; display:grid; place-items:center; font-size:46px; font-weight:800; }
+.first-then{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
+.first-then div{ background:var(--surface); border-radius:18px; padding:10px 14px; font-size:20px; font-weight:600; }
+.first-then small{ display:block; color:var(--muted); font-weight:500; font-size:15px; }
+.dur{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:10px; }
+.dur .btn{ min-width:84px; }
+
+/* Code parent */
+.pin-dots{ display:flex; justify-content:center; gap:16px; margin:22px 0; }
+.pin-dots span{ width:22px; height:22px; border-radius:50%; border:3px solid var(--ink); }
+.pin-dots span.on{ background:var(--ink); }
+.pin-dots.shake{ animation:shake .35s; }
+@keyframes shake{ 25%{ transform:translateX(-10px); } 75%{ transform:translateX(10px); } }
+.keypad{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; max-width:300px; margin:0 auto; }
+.keypad button{ border:0; background:var(--surface); border-radius:50%; aspect-ratio:1; font-size:30px; font-weight:600; }
+.keypad button.ghost{ background:none; font-size:22px; }
+#pinMsg{ min-height:28px; color:var(--storm); text-align:center; font-weight:600; }
+
+@media (prefers-reduced-motion: reduce){
+  .pop, .w{ transition:none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <button class="iconbtn" id="homeBtn" aria-label="Accueil">🏠</button>
+    <button class="stars" id="stars" aria-label="Mes trophées">⭐ 0</button>
+    <button class="iconbtn" id="voiceBtn" aria-label="Lire à voix haute">🔈</button>
+  </header>
+
+  <!-- ACCUEIL -->
+  <section class="screen on" id="home">
+    <h1 id="hello">Salut !</h1>
+    <div class="plan-card" id="welcome" hidden><h3>Bienvenue !</h3><p style="margin:4px 0 10px">Quel est le prénom de l’enfant ?</p><input type="text" id="welcomeName" aria-label="Prénom"><div class="row" style="margin-top:12px"><button class="btn" id="welcomeOk">C’est parti</button></div><p class="small" style="margin:10px 0 0">Ensuite, réglez son âge et la voix dans l’Espace parent.</p></div>
+    <p class="lead">Quel temps fait-il dans ta tête ?</p>
+    <div class="weather" data-for="home"></div>
+    <div class="row"><button class="btn soft" data-go="tools">🧰 Ma boîte à calme</button><button class="btn soft" data-go="plan">📋 Mon plan</button><button class="btn soft" data-go="timer">⏳ Minuteur</button></div>
+    <button class="parent-btn" id="parentBtn"><i></i>👤 Espace parent</button>
+  </section>
+
+  <!-- RESPIRATION -->
+  <section class="screen" id="breathe">
+    <p class="big-phrase" id="breatheHead">Pause respiration</p>
+    <div class="breath-stage"><div id="bubble"><span>🌸</span></div></div>
+    <div id="breatheText">Prêt ?</div>
+    <div id="breatheCount"></div>
+    <div id="breatheIntro" class="plan-card" hidden>
+      <p id="breatheExplain" style="font-size:20px;margin:6px 0"></p>
+      <div class="row" style="margin-top:6px"><button class="btn" id="breatheGo">Je suis prêt !</button></div>
+    </div>
+    <div class="row"><button class="btn soft" id="breatheHelp">❓ Comment on fait ?</button><button class="btn soft" id="breatheVoice">🔊 Voix guide</button></div>
+    <div class="row" style="margin-top:10px"><button class="btn soft done-btn">J’ai fini</button></div>
+  </section>
+
+  <!-- VÉRIFICATION -->
+  <section class="screen" id="check">
+    <h2>Et maintenant ?</h2>
+    <p class="lead">Quel temps fait-il dans ta tête ?</p>
+    <div class="weather" data-for="check"></div>
+  </section>
+
+  <!-- CHOIX D'OUTIL -->
+  <section class="screen" id="choose">
+    <h2 id="chooseHead">Qu’est-ce qui pourrait t’aider ?</h2>
+    <p class="lead" id="chooseLead">Choisis ce que tu veux. Il n’y a pas de mauvais choix.</p>
+    <div class="choices" id="choosePlan"></div>
+    <div class="row" id="moreRow"><button class="linkish" id="moreBtn">Voir d’autres idées</button></div>
+    <div class="choices more" id="chooseMore"></div>
+  </section>
+
+  <!-- BOÎTE À CALME -->
+  <section class="screen" id="tools">
+    <h2 id="toolsHead">Ma boîte à calme</h2>
+    <p class="lead">Choisis un jeu ou une astuce.</p>
+    <div class="choices" id="toolsGrid"></div>
+  </section>
+
+  <!-- CARRÉ -->
+  <section class="screen" id="square">
+    <h2 class="center">Le carré du calme</h2>
+    <p class="lead center">Suis le point avec tes yeux.</p>
+    <div class="square"><div id="sqDot"></div></div>
+    <div id="sqText"></div>
+    <div class="row"><button class="btn soft done-btn">J’ai fini</button></div>
+  </section>
+
+  <!-- 5 SENS -->
+  <section class="screen" id="ground">
+    <h2 class="center">Le jeu des 5 sens</h2>
+    <div class="ground-num" id="gNum">5</div>
+    <p class="big-phrase" id="gText"></p>
+    <div class="dots" id="gDots"></div>
+    <p class="hint-label" id="hintLabel">Besoin d’idées ? Touche une image quand tu l’as trouvée.</p>
+    <div class="hints" id="gHints"></div>
+    <div class="row" id="gRow"><button class="btn" id="gFound">J’en ai trouvé un !</button></div>
+  </section>
+
+  <!-- BULLES -->
+  <section class="screen" id="bubbles">
+    <h2 class="center">Éclate les bulles</h2>
+    <p class="lead center" id="popLeft"></p>
+    <div class="pop-grid" id="popGrid"></div>
+    <div class="row"><button class="btn soft" id="popAgain">Encore des bulles</button><button class="btn done-btn">J’ai fini</button></div>
+  </section>
+
+  <!-- BALLON -->
+  <section class="screen" id="balloon-s">
+    <h2 class="center">Le ballon des soucis</h2>
+    <p class="lead center" id="balloonLead">Écris ce qui t’embête. Ou pense-le très fort dans ta tête.</p>
+    <textarea id="worry" placeholder="Mon souci…" aria-label="Mon souci"></textarea>
+    <div class="row" id="micRow" style="margin-top:10px"><button class="btn soft" id="micBtn">🎤 Dire mon souci</button><button class="btn soft" id="sayBtn">🗣️ Je le dis tout fort</button></div>
+    <p class="small center" id="micHelp">Tu peux aussi toucher le micro 🎤 du clavier, et parler.</p>
+    <div class="balloon-zone"><div id="balloon"><div class="b" id="balloonTxt">?</div><div class="s"></div></div></div>
+    <div class="row" id="balloonRow"><button class="btn" id="letGo">🎈 Laisse partir le ballon</button></div>
+  </section>
+
+  <!-- BOUGER -->
+  <section class="screen" id="move">
+    <h2 class="center">Défi bouger</h2>
+    <div class="kid-wrap"><svg class="kid" id="kid" viewBox="0 0 200 215" aria-hidden="true">
+      <rect class="wall-b" x="22" y="34" width="156" height="168" rx="8"/>
+      <rect class="wall-r" x="168" y="26" width="18" height="176" rx="3"/>
+      <line class="ground" x1="8" y1="203" x2="192" y2="203"/>
+      <g class="k-all">
+        <g class="k-bag"><rect x="76" y="80" width="48" height="50" rx="12"/><line x1="86" y1="78" x2="88" y2="104"/><line x1="114" y1="78" x2="112" y2="104"/></g>
+        <g class="tl"><line class="pant" x1="93" y1="128" x2="93" y2="162"/><g class="sl"><line class="pant" x1="93" y1="162" x2="93" y2="193"/><ellipse class="shoe" cx="90" cy="197" rx="9" ry="5"/></g></g>
+        <g class="tr"><line class="pant" x1="107" y1="128" x2="107" y2="162"/><g class="sr"><line class="pant" x1="107" y1="162" x2="107" y2="193"/><ellipse class="shoe" cx="110" cy="197" rx="9" ry="5"/></g></g>
+        <rect class="torso" x="83" y="74" width="34" height="60" rx="15"/>
+        <g class="al"><line class="skin" x1="80" y1="84" x2="78" y2="107"/><g class="fl"><line class="skin" x1="78" y1="107" x2="78" y2="127"/><circle class="hand" cx="78" cy="130" r="5.5"/></g></g>
+        <g class="ar"><line class="skin" x1="120" y1="84" x2="122" y2="107"/><g class="fr"><line class="skin" x1="122" y1="107" x2="122" y2="127"/><circle class="hand" cx="122" cy="130" r="5.5"/></g></g>
+        <circle class="head" cx="100" cy="50" r="22"/>
+        <path class="hair" d="M78 49 a22 22 0 0 1 44 0 q-6 -9 -15 -8 q-4 6 -12 4 q-8 -2 -17 4z"/>
+        <circle class="eye" cx="92" cy="52" r="2.5"/><circle class="eye" cx="108" cy="52" r="2.5"/>
+        <path class="smile" d="M93 60 q7 6 14 0"/>
+      </g>
+    </svg></div>
+    <p class="big-phrase" id="moveT"></p>
+    <div id="moveTimer"></div>
+    <div class="row"><button class="btn" id="moveGo">C’est parti !</button><button class="btn soft" id="moveNext">Un autre défi</button></div>
+    <div class="row"><button class="btn soft done-btn">J’ai fini</button></div>
+  </section>
+
+  <!-- MOTS DOUX -->
+  <section class="screen" id="words">
+    <h2 class="center">Des mots pour toi</h2>
+    <div class="card-word" id="wordCard"></div>
+    <div class="row"><button class="btn soft" id="wordNext">Un autre</button><button class="btn done-btn">J’ai fini</button></div>
+  </section>
+
+  <!-- CÂLIN -->
+  <section class="screen" id="hug">
+    <div class="sun-big">🤗</div>
+    <p class="big-phrase">Va voir Papa, Maman ou un adulte que tu aimes.</p>
+    <p class="lead center" id="hugLead">Tu peux juste dire : « Câlin ? »</p>
+    <div class="row"><button class="btn done-btn">J’ai eu mon câlin</button></div>
+  </section>
+
+  <!-- MON PLAN -->
+  <section class="screen" id="plan">
+    <h1 id="planHead">Mon plan de calme</h1>
+    <div id="planEmpty" class="plan-card"><p>Ton plan n’est pas encore rempli. Remplis-le avec un adulte de la maison, à un moment calme.</p></div>
+    <div class="plan-card" id="planSignsCard"><h3>Quand je sens…</h3><div class="chips" id="planSigns"></div></div>
+    <div class="plan-card" id="planItemsCard"><h3>… je peux :</h3><div class="choices" id="planItems"></div></div>
+    <p class="lead center">Et je peux toujours demander de l’aide à un adulte. 🤝</p>
+  </section>
+
+  <!-- OÙ JE LE SENS -->
+  <section class="screen" id="body">
+    <h2>Où tu le sens dans ton corps ?</h2>
+    <p class="lead">Touche tout ce que tu sens en ce moment.</p>
+    <div class="choices" id="bodyGrid"></div>
+    <div class="row"><button class="btn" id="bodyOk">C’est ça !</button></div>
+  </section>
+
+  <!-- BOCAL -->
+  <section class="screen" id="jar">
+    <h2 class="center">Le bocal à paillettes</h2>
+    <div class="lid"></div>
+    <div class="jar" id="jarBox"><canvas id="jarCanvas"></canvas></div>
+    <div id="jarText"></div>
+    <div class="chips sound-chips" id="jarSounds"></div>
+    <div class="row"><button class="btn soft" id="jarShake">✨ Secouer le bocal</button><button class="btn done-btn">J’ai fini</button></div>
+  </section>
+
+  <!-- SONS -->
+  <section class="screen" id="sounds">
+    <h2 class="center">Sons calmes</h2>
+    <p class="lead center">Choisis un son. Ferme les yeux si tu veux, et écoute.</p>
+    <div class="choices" id="soundGrid"></div>
+    <div class="row"><button class="btn done-btn">J’ai fini</button></div>
+  </section>
+
+  <!-- ACTION PERSONNELLE -->
+  <section class="screen" id="custom">
+    <div class="sun-big" id="cE"></div>
+    <p class="big-phrase" id="cT"></p>
+    <div class="row"><button class="btn done-btn">J’ai fini</button></div>
+  </section>
+
+  <!-- MINUTEUR -->
+  <section class="screen" id="timer">
+    <h2 class="center">Minuteur</h2>
+    <div id="tSetup">
+      <div class="field"><label for="tFirst">D’abord (facultatif)</label><input type="text" id="tFirst" placeholder="Ex. : je finis ma partie"></div>
+      <div class="field"><label for="tThen">Ensuite (facultatif)</label><input type="text" id="tThen" placeholder="Ex. : on passe à table"></div>
+      <p class="lead center" style="margin-bottom:0">Combien de temps ?</p>
+      <div class="dur" id="tDur"></div>
+    </div>
+    <div id="tRun" hidden>
+      <div class="dial" id="tDial"><span id="tLeft"></span></div>
+      <p class="big-phrase" id="tMsg"></p>
+      <div class="first-then" id="tFT"><div><small>D’abord</small><span id="tF"></span></div><div><small>Ensuite</small><span id="tT"></span></div></div>
+      <div class="row"><button class="btn soft" id="tPlus">+ 1 minute</button><button class="btn soft" id="tStop">Arrêter</button></div>
+    </div>
+  </section>
+
+  <!-- TROPHÉES -->
+  <section class="screen" id="trophies">
+    <h1 id="trophHead">Mes trophées</h1>
+    <p class="lead" id="trophLead"></p>
+    <div class="progress" aria-hidden="true"><i id="trophBar"></i></div>
+    <div class="trophy-grid" id="trophGrid"></div>
+  </section>
+
+  <!-- BRAVO -->
+  <section class="screen" id="bravo">
+    <div class="sun-big">☀️</div>
+    <h1 class="center" id="bravoHead">Bravo !</h1>
+    <p class="lead center">Tu as ramené le soleil. Tu gagnes une étoile ⭐</p>
+    <p class="center" id="bravoTip"></p>
+    <div class="trophy-win" id="trophyWin" hidden>
+      <span class="big" id="twE"></span>
+      <h2 id="twN"></h2>
+      <p class="center" id="twD" style="margin:0"></p>
+    </div>
+    <div id="bravoNext" class="center"></div>
+    <div class="row"><button class="btn soft" data-go="trophies">🏆 Mes trophées</button></div>
+    <div class="row"><button class="btn" data-go="home">Retour à l’accueil</button></div>
+  </section>
+
+  <!-- CODE PARENT -->
+  <section class="screen" id="pin">
+    <h1 class="center" id="pinHead">Espace parent</h1>
+    <p class="lead center" id="pinLead">Entrez votre code</p>
+    <div class="pin-dots" id="pinDots"><span></span><span></span><span></span><span></span></div>
+    <div id="pinMsg"></div>
+    <div class="keypad" id="keypad"></div>
+    <div class="center"><button class="linkish" id="pinForgot">Code oublié ?</button></div>
+    <div id="pinGate" hidden>
+      <p class="center" id="gateQ"></p>
+      <input type="text" inputmode="numeric" id="gateA" aria-label="Réponse" style="max-width:200px;display:block;margin:0 auto">
+      <div class="row"><button class="btn soft" id="gateOk">Valider</button></div>
+    </div>
+  </section>
+
+  <!-- PARENT -->
+  <section class="screen" id="parent">
+    <h1>Espace parent</h1>
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-pane="pDuring">Pendant la crise</button>
+      <button class="tab" data-pane="pAfter">Après</button>
+      <button class="tab" data-pane="pPlan">Plan de calme</button>
+      <button class="tab" data-pane="pLog">Journal</button>
+      <button class="tab" data-pane="pSet">Réglages</button>
+    </div>
+
+    <div class="pane on" id="pDuring">
+      <div class="guide"><ol>
+        <li><b>La sécurité d’abord.</b>Éloignez ce qui peut casser ou blesser, et les frères et sœurs si besoin.</li>
+        <li><b>Votre calme est contagieux.</b>Respirez avant de parler. Voix basse, gestes lents, mettez-vous à sa hauteur.</li>
+        <li><b>Très peu de mots.</b>Pendant la crise, son cerveau émotionnel a pris les commandes : il ne peut pas entendre d’explications, de morale ni de négociation. Phrases courtes, répétées.</li>
+        <li><b>Nommez l’émotion.</b>« Tu es très en colère. Je comprends. » Ça ne stoppe pas forcément la crise, mais ça lui apprend à reconnaître ce qu’il vit.</li>
+        <li><b>Proposez, n’imposez pas.</b>Tendez la tablette sur « Orage », ou proposez deux choix : « Les bulles ou la respiration ? »</li>
+        <li><b>Restez présent, sans céder.</b>Si la crise est partie d’un refus, le refus tient. Mais vous restez là jusqu’à ce que ça passe.</li>
+      </ol></div>
+      <div class="say">
+        <div><h3>À dire</h3><ul>
+          <li>« Tu es en sécurité. »</li>
+          <li>« Je suis là. Je reste avec toi. »</li>
+          <li>« Tu as le droit d’être en colère. »</li>
+          <li>« On respire ensemble ? »</li>
+        </ul></div>
+        <div><h3>À éviter</h3><ul>
+          <li>« Calme-toi ! »</li>
+          <li>« Arrête ton cinéma. »</li>
+          <li>« Si tu continues, tu seras privé de… »</li>
+          <li>Les longues explications pendant la crise.</li>
+        </ul></div>
+      </div>
+    </div>
+
+    <div class="pane" id="pAfter">
+      <div class="guide"><ol>
+        <li><b>Attendez le vrai retour au calme.</b>Quelques minutes, parfois plus. Un enfant encore « chaud » peut repartir.</li>
+        <li><b>Reconnectez d’abord.</b>Un câlin, un verre d’eau, un moment ensemble. La relation avant la leçon.</li>
+        <li><b>Parlez-en plus tard, simplement.</b>« Qu’est-ce qui s’est passé juste avant ? Qu’est-ce qui t’a aidé ? » Fatigue, faim, bruit, changement de programme sont des déclencheurs fréquents.</li>
+        <li><b>Réparez sans humilier.</b>S’il a cassé ou blessé, il répare ou s’excuse, sans sermon.</li>
+        <li><b>Notez dans le journal.</b>Le déclencheur et ce qui a marché. Au fil des semaines, vous verrez se dessiner ses schémas, et c’est précieux pour les professionnels qui le suivent.</li>
+        <li><b>Prenez soin de vous aussi.</b>Personne ne gère une crise parfaitement. Si vous avez crié, vous pouvez aussi réparer : « J’étais fatigué, je n’aurais pas dû crier. »</li>
+      </ol></div>
+      <p class="small">Cette application aide au quotidien mais ne remplace pas un suivi. Si les crises deviennent plus fréquentes, plus longues, ou s’il se met en danger, parlez-en à son médecin ou au professionnel qui le suit.</p>
+    </div>
+
+    <div class="pane" id="pPlan">
+      <p class="small">Remplissez-le avec lui, à un moment calme. C’est lui qui choisit : c’est son plan, pas le vôtre. En crise, l’appli lui proposera ces outils en premier.</p>
+      <h3>Ce qui l’aide (4 maximum, dans l’ordre)</h3>
+      <div class="chips" id="ppItems"></div>
+      <h3>Ajouter une action rien qu’à lui</h3>
+      <div class="chips" id="ppEmoji"></div>
+      <input type="text" id="ppText" placeholder="Ex. : Serrer mon doudou très fort" aria-label="Nouvelle action">
+      <div class="row" style="justify-content:flex-start;margin-top:10px"><button class="btn soft" id="ppAdd">Ajouter</button></div>
+      <ul class="mylist" id="ppCustom"></ul>
+      <h3>Ses signaux d’alerte</h3>
+      <p class="small" style="margin:0">Ce qu’il ressent juste avant que ça déborde. Observez-le pendant quelques jours, et demandez-lui.</p>
+      <div class="chips" id="ppSigns"></div>
+      <div class="row"><button class="btn soft" data-go="plan">Voir son plan</button><button class="btn soft" data-go="timer">Ouvrir le minuteur</button></div>
+    </div>
+
+    <div class="pane" id="pLog">
+      <div class="summary" id="logSummary"></div>
+      <div class="row" style="margin-top:0;margin-bottom:12px"><button class="btn soft" id="copyLog">Copier le journal</button></div>
+      <div id="logList"></div>
+    </div>
+
+    <div class="pane" id="pSet">
+      <div class="field"><label for="setName">Prénom de l’enfant</label><input type="text" id="setName"></div>
+      <div class="field"><label for="setPron">Comment la voix doit le prononcer</label><input type="text" id="setPron" placeholder="Écrivez-le comme il se dit">
+        <p class="small" style="margin:6px 0 0">Écrivez le prénom comme il se prononce. Le prénom affiché à l’écran ne change pas.</p>
+        <div class="row" style="justify-content:flex-start;margin-top:8px"><button class="btn soft" id="pronTest">▶ Écouter le prénom</button></div></div>
+      <div class="field"><label>Âge de l’enfant</label><div class="chips" id="setAge"></div><p class="small" style="margin:4px 0 0">Adapte les mots, le rythme de respiration, les défis et la longueur des jeux.</p></div>
+      <div class="field"><label class="toggle"><input type="checkbox" id="setVoice"> Lire les phrases à voix haute</label></div>
+      <div id="voiceSettings">
+        <div class="field" id="engineField" hidden><label>Type de voix</label><div class="chips" id="setEngine"></div></div>
+        <div class="field" id="cVoiceField" hidden><label>Voix Claude</label><div class="chips" id="setCVoice"></div></div>
+        <div class="field" id="dVoiceField"><label for="setVoiceName">Voix de l’appareil</label><select id="setVoiceName"></select>
+          <p class="small" style="margin:6px 0 0" id="voiceHelp">Sur iPhone et iPad, des voix bien plus naturelles sont disponibles gratuitement : Réglages › Accessibilité › Contenu énoncé › Voix › Français, puis téléchargez une voix marquée « Améliorée » ou « Premium ». Rechargez ensuite cette page, et elle apparaîtra ici.</p></div>
+        <div class="field"><label for="setRate">Vitesse : <span id="rateVal"></span></label><input type="range" id="setRate" min="0.7" max="1.1" step="0.05"></div>
+        <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn soft" id="voiceTest">▶ Écouter un exemple</button></div>
+      </div>
+      <div class="field">
+        <label for="newPhrase">Ajouter un mot doux personnel</label>
+        <input type="text" id="newPhrase" placeholder="Ex. : Papa est fier de toi">
+        <div class="row" style="justify-content:flex-start;margin-top:10px"><button class="btn soft" id="addPhrase">Ajouter</button></div>
+        <ul class="mylist" id="myPhrases"></ul>
+      </div>
+      <div class="field"><button class="btn soft" id="changePin">Changer le code parent</button></div>
+      <div class="field"><button class="linkish" id="resetAll">Effacer toutes les données</button></div>
+      <p class="small">Les données restent uniquement sur cet appareil, dans ce navigateur.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var KEY = "coincalme.v1";
+  function fresh(){ return { name:"", namePron:"", age:"moyen", voice:false, engine:"", cvoice:"rounded", voiceName:"", rate:0.85, stars:0, log:[], phrases:[], plan:[], custom:[], signs:[] }; }
+  var S = fresh();
+  try { var raw = localStorage.getItem(KEY); if (raw) { var o = JSON.parse(raw); for (var k in o) S[k] = o[k]; } } catch(e){}
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+
+  var W = [null,
+    {e:"☀️", n:"Grand soleil", d:"Je me sens bien"},
+    {e:"⛅", n:"Quelques nuages", d:"Je suis un peu embêté"},
+    {e:"💨", n:"Du vent", d:"Ça s’agite dans moi"},
+    {e:"🌧️", n:"Grosse pluie", d:"C’est vraiment dur"},
+    {e:"⛈️", n:"Orage", d:"Ça explose !"}
+  ];
+  var TOOLS = {
+    breathe:{e:"🌸", n:"Respirer"}, square:{e:"🟦", n:"Carré du calme"},
+    ground:{e:"👀", n:"Jeu des 5 sens"}, bubbles:{e:"🫧", n:"Éclater des bulles"},
+    "balloon-s":{e:"🎈", n:"Ballon des soucis"}, move:{e:"🦘", n:"Bouger"},
+    jar:{e:"✨", n:"Bocal à paillettes"}, sounds:{e:"🌊", n:"Sons calmes"},
+    words:{e:"💛", n:"Mots doux"}, hug:{e:"🤗", n:"Un câlin"}, body:{e:"🧍", n:"Où je le sens ?"}
+  };
+  var SIGNS = [
+    {k:"head", e:"🥵", t:"Ma tête chauffe"}, {k:"jaw", e:"😬", t:"Je serre les dents"},
+    {k:"fists", e:"✊", t:"Je serre les poings"}, {k:"heart", e:"💓", t:"Mon cœur bat vite"},
+    {k:"belly", e:"🌀", t:"J’ai le ventre noué"}, {k:"legs", e:"🦵", t:"Mon corps ne tient pas en place"},
+    {k:"shout", e:"📢", t:"J’ai envie de crier"}, {k:"hit", e:"💥", t:"J’ai envie de taper"},
+    {k:"tears", e:"💧", t:"J’ai envie de pleurer"}, {k:"hide", e:"🙈", t:"J’ai envie de me cacher"}
+  ];
+  var SOUNDS = [ {k:"rain", e:"🌧️", n:"La pluie"}, {k:"waves", e:"🌊", n:"Les vagues"}, {k:"wind", e:"🍃", n:"Le vent"}, {k:"soft", e:"🌙", n:"Bruit doux"} ];
+  var EMOJIS = ["🧸","🛏️","🎧","🎨","🧃","🐶","⚽","🚿"];
+  function signInfo(k){ for (var i = 0; i < SIGNS.length; i++) if (SIGNS[i].k === k) return SIGNS[i]; return null; }
+  function itemInfo(k){
+    if (TOOLS[k]) return TOOLS[k];
+    for (var i = 0; i < S.custom.length; i++) if (S.custom[i].id === k) return { e:S.custom[i].e, n:S.custom[i].t };
+    return null;
+  }
+  function allItems(){ return Object.keys(TOOLS).concat(S.custom.map(function(c){ return c.id; })); }
+  var AGES = {
+    petit:{ label:"5 à 7 ans", inh:3000, exh:4500, cycles:4, inTxt:"Sens la fleur… 🌸", exTxt:"Souffle la bougie… 🕯️", inE:"🌸", exE:"🕯️", side:3000, pops:16 },
+    moyen:{ label:"8 à 10 ans", inh:4000, exh:6000, cycles:5, inTxt:"Inspire par le nez… 🌸", exTxt:"Souffle lentement par la bouche… 🍃", inE:"🌸", exE:"🍃", side:3500, pops:25 },
+    grand:{ label:"11 à 13 ans", inh:4000, exh:6000, cycles:6, inTxt:"Inspire…", exTxt:"Expire lentement…", inE:"🌬️", exE:"🌬️", side:4000, pops:30 }
+  };
+  function A(){ return AGES[S.age] || AGES.moyen; }
+  var WORDS_GRAND = [
+    "C’est normal de ressentir ça. Ça va redescendre.",
+    "Tu n’es pas ton énervement. C’est une vague, elle passe.",
+    "Ton cerveau s’emballe, ce n’est pas ta faute. Tu peux le ralentir.",
+    "Prends ton temps. Personne ne te presse.",
+    "Tu as déjà réussi à te calmer avant. Tu peux le refaire.",
+    "On en parlera plus tard, quand tu seras prêt.",
+    "Tu as le droit d’être en colère. On cherche juste comment le dire sans te faire de mal.",
+    "On est là pour toi, même dans les moments difficiles."
+  ];
+  var BASE_WORDS = [
+    "Tu es en sécurité.",
+    "Je suis là. Je reste avec toi.",
+    "Ce que tu ressens va passer, comme un orage.",
+    "Tu as le droit d’être en colère.",
+    "Tu n’es pas méchant. Tu es débordé, et ça arrive.",
+    "On t’aime, même quand c’est difficile.",
+    "Respire doucement. Tu fais de ton mieux.",
+    "Après la pluie, le soleil revient toujours."
+  ];
+  var MOVES_MOYEN = [
+    {e:"🧱", t:"Pompes contre le mur : pousse fort, 10 fois", s:20},
+    {e:"⭐", t:"20 sauts en étoile", s:25},
+    {e:"🎒", t:"Porte ton cartable bien rempli jusqu’à ta chambre, et reviens", s:30},
+    {e:"🪑", t:"La chaise invisible contre le mur : tiens bon !", s:20},
+    {e:"✊", t:"Serre les poings et tout ton corps très fort… puis relâche tout", s:10},
+    {e:"🐕", t:"Secoue tout ton corps comme un chien mouillé", s:10},
+    {e:"🦀", t:"Marche en crabe jusqu’au bout de la pièce", s:20}
+  ];
+  var MOVES_GRAND = [
+    {e:"🧱", t:"15 pompes contre le mur, lentement", s:30},
+    {e:"🪑", t:"La chaise contre le mur, cuisses bien à l’horizontale", s:30},
+    {e:"🏋️", t:"La planche : garde ton corps bien droit", s:30},
+    {e:"⭐", t:"30 jumping jacks", s:30},
+    {e:"🎒", t:"Monte et descends les escaliers avec ton sac sur le dos", s:45},
+    {e:"✊", t:"Contracte tout ton corps 5 secondes, puis relâche complètement. Deux fois.", s:15},
+    {e:"🚶", t:"Va marcher à grands pas, dehors ou dans le couloir", s:60}
+  ];
+  var MOVES = [
+    {e:"🧱", t:"Pousse le mur très fort avec tes deux mains", s:10},
+    {e:"🦘", t:"Saute comme un kangourou", s:15},
+    {e:"🐕", t:"Secoue tout ton corps comme un chien mouillé", s:10},
+    {e:"🗿", t:"Fais la statue, ne bouge plus du tout", s:10},
+    {e:"✊", t:"Serre tes poings très fort… puis ouvre-les tout doux", s:8},
+    {e:"🐢", t:"Marche comme une tortue, tout doucement", s:15},
+    {e:"🎈", t:"Gonfle-toi comme un ballon, puis dégonfle-toi", s:10}
+  ];
+  var MOVES_PETIT = MOVES;
+
+  var session = null; // crise en cours
+  var timers = [];
+  function clearTimers(){ timers.forEach(clearTimeout); timers = []; stopSpeech(); }
+  function later(fn, ms){ timers.push(setTimeout(fn, ms)); }
+  function $(id){ return document.getElementById(id); }
+
+  // ----- Voix -----
+  var frVoices = [], ctts = null;
+  var CVOICES = [ {k:"rounded", n:"Douce"}, {k:"buttery", n:"Chaleureuse"}, {k:"airy", n:"Légère"}, {k:"glassy", n:"Claire"} ];
+  function voiceScore(v){
+    var n = v.name, s = 0;
+    if (/premium/i.test(n)) s += 60;
+    if (/enhanced|amélioré|ameliore|natural|neural|online|naturelle/i.test(n)) s += 45;
+    if (/google/i.test(n)) s += 25;
+    if (/siri/i.test(n)) s += 20;
+    if (/^fr[-_]FR/i.test(v.lang)) s += 6;
+    if (/compact|eloquence|grandma|grandpa|grand-mère|grand-père|rocko|shelley|flo\b|reed|sandy|eddy|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|albert|fred|junior|ralph|kathy/i.test(n)) s -= 80;
+    return s;
+  }
+  function loadVoices(){
+    if (!window.speechSynthesis) return;
+    frVoices = speechSynthesis.getVoices().filter(function(v){ return /^fr/i.test(v.lang); })
+      .sort(function(a, b){ return voiceScore(b) - voiceScore(a); });
+    if ($("parent").classList.contains("on")) renderVoiceSettings();
+  }
+  if (window.speechSynthesis){ loadVoices(); try { speechSynthesis.addEventListener("voiceschanged", loadVoices); } catch(e){ speechSynthesis.onvoiceschanged = loadVoices; } }
+  function pickVoice(){
+    for (var i = 0; i < frVoices.length; i++) if (frVoices[i].name === S.voiceName) return frVoices[i];
+    return frVoices[0] || null;
+  }
+  function cleanSpeech(t){
+    return String(t)
+      .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{20E3}]/gu, "")
+      .replace(/[«»"]/g, "").replace(/…/g, ".").replace(/\s+([.!?,:])/g, "$1").replace(/\s+/g, " ").trim();
+  }
+  function stopSpeech(){
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    if (ctts) { try { ctts.stop(); } catch(e){} }
+  }
+  function speak(t, force){
+    if ((!S.voice && !force)) return;
+    if (pendingAnnounce && !force){ t = pendingAnnounce + ". " + t; pendingAnnounce = null; }
+    var text = cleanSpeech(t); if (!text) return;
+    if (S.name && S.namePron) text = text.split(S.name).join(S.namePron);
+    stopSpeech();
+    if (S.engine === "claude" && ctts){
+      ctts.speak(text, { voice:S.cvoice || "rounded", rate:S.rate || 0.85, language:"fr" }).catch(function(){});
+      return;
+    }
+    if (!window.speechSynthesis) return;
+    try {
+      var v = pickVoice();
+      text.split(/(?<=[.!?])\s+/).forEach(function(part){
+        var u = new SpeechSynthesisUtterance(part);
+        u.lang = v ? v.lang : "fr-FR"; if (v) u.voice = v;
+        u.rate = S.rate || 0.85; u.pitch = 1; u.volume = 0.95;
+        speechSynthesis.speak(u);
+      });
+    } catch(e){}
+  }
+  (function waitTts(){
+    if (!window.claude || !window.claude.use) return;
+    window.claude.use("tts").then(function(t){
+      ctts = t;
+      if (t && !S.engine){ S.engine = "claude"; save(); }
+      if ($("parent").classList.contains("on")) renderVoiceSettings();
+    }).catch(function(){});
+  })();
+  function renderVoiceSettings(){
+    $("engineField").hidden = !ctts;
+    var useClaude = S.engine === "claude" && ctts;
+    $("cVoiceField").hidden = !useClaude; $("dVoiceField").hidden = !!useClaude;
+    var eb = $("setEngine"); eb.innerHTML = "";
+    [["claude","Voix Claude (plus naturelle)"],["device","Voix de l’appareil"]].forEach(function(o){
+      var b = document.createElement("button"); b.className = "chip" + ((o[0] === "claude") === !!useClaude ? " on" : ""); b.textContent = o[1];
+      b.onclick = function(){ S.engine = o[0]; save(); renderVoiceSettings(); }; eb.appendChild(b);
+    });
+    var cb = $("setCVoice"); cb.innerHTML = "";
+    CVOICES.forEach(function(c){
+      var b = document.createElement("button"); b.className = "chip" + ((S.cvoice || "rounded") === c.k ? " on" : ""); b.textContent = c.n;
+      b.onclick = function(){ S.cvoice = c.k; save(); renderVoiceSettings(); speak("Tu es en sécurité. Je suis là.", true); }; cb.appendChild(b);
+    });
+    var sel = $("setVoiceName"), cur = pickVoice(); sel.innerHTML = "";
+    if (!frVoices.length){ var o = document.createElement("option"); o.textContent = "Aucune voix française trouvée"; sel.appendChild(o); sel.disabled = true; }
+    else { sel.disabled = false; frVoices.forEach(function(v, i){ var o = document.createElement("option"); o.value = v.name;
+      o.textContent = v.name + (i === 0 ? " (conseillée)" : ""); if (cur && v.name === cur.name) o.selected = true; sel.appendChild(o); }); }
+    $("setRate").value = S.rate || 0.85;
+    $("rateVal").textContent = (S.rate || 0.85) <= 0.8 ? "très calme" : ((S.rate || 0.85) <= 0.9 ? "calme" : "normale");
+  }
+
+  // Petit son doux pour les bulles
+  var actx = null;
+  function pop(){
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = "sine"; o.frequency.setValueAtTime(520 + Math.random()*260, actx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(180, actx.currentTime + .12);
+      g.gain.setValueAtTime(.18, actx.currentTime); g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + .15);
+      o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + .16);
+    } catch(e){}
+  }
+
+  function refreshTop(){
+    $("stars").textContent = "⭐ " + S.stars;
+    $("voiceBtn").textContent = S.voice ? "🔊" : "🔈";
+    $("voiceBtn").setAttribute("aria-pressed", S.voice ? "true" : "false");
+    $("hello").textContent = S.name ? "Salut " + S.name + " !" : "Salut !"; $("welcome").hidden = !!S.name;
+  }
+
+  function go(id){
+    clearTimers(); stopAnim(); stopSound(); stopMic();
+    if (id !== "parent") parentOK = false;
+    document.querySelectorAll(".screen").forEach(function(s){ s.classList.toggle("on", s.id === id); });
+    window.scrollTo(0,0);
+    if (session && TOOLS[id]) session.tools.push(id);
+    var init = INIT[id]; if (init) init();
+  }
+
+  // Météo
+  function buildWeather(){
+    document.querySelectorAll(".weather").forEach(function(box){
+      box.innerHTML = "";
+      for (var l = 1; l <= 5; l++){
+        var b = document.createElement("button");
+        b.className = "w"; b.dataset.l = l;
+        b.innerHTML = '<div class="e" aria-hidden="true">'+W[l].e+'</div><div><b>'+W[l].n+'</b><span>'+W[l].d+'</span></div>';
+        (function(level, where){ b.onclick = function(){ pickWeather(level, where); }; })(l, box.dataset.for);
+        box.appendChild(b);
+      }
+    });
+  }
+  function pickWeather(l, where){
+    if (where === "home"){
+      if (l <= 2){ $("toolsHead").textContent = l === 1 ? "Super ! Un jeu calme ?" : "Un petit jeu pour chasser les nuages ?"; go("tools"); return; }
+      session = { start:new Date().toISOString(), from:l, tools:[], checks:[], signs:[] };
+      go(l === 3 ? "body" : "breathe");
+    } else {
+      if (!session) { go("home"); return; }
+      session.checks.push(l);
+      if (l <= 2) finishSession(l); else go("choose");
+    }
+  }
+  function finishSession(l){
+    var ok = !!l && l <= 2;
+    S.log.unshift({ id:Date.now(), start:session.start, end:new Date().toISOString(), from:session.from, to:l, tools:session.tools.slice(), signs:(session.signs || []).slice(), note:"" });
+    if (S.log.length > 200) S.log.length = 200;
+    if (ok){ S.stars++; justTrophy = S.stars % 5 === 0 ? trophyAt(S.stars / 5 - 1) : null; }
+    session = null; save(); refreshTop();
+    if (ok) go("bravo"); else go("home");
+  }
+
+  function choiceBtn(k){
+    var info = itemInfo(k); if (!info) return null;
+    var b = document.createElement("button"); b.className = "choice";
+    b.innerHTML = '<span class="e" aria-hidden="true">'+info.e+'</span>';
+    b.appendChild(document.createTextNode(info.n));
+    b.onclick = function(){ openItem(k); };
+    return b;
+  }
+  function fillChoices(box, keys){ box.innerHTML = ""; keys.forEach(function(k){ var b = choiceBtn(k); if (b) box.appendChild(b); }); }
+  function buildChoices(){ fillChoices($("toolsGrid"), allItems()); }
+  var curCustom = null;
+  var pendingAnnounce = null;
+  function openItem(k){
+    if (TOOLS[k]) { pendingAnnounce = TOOLS[k].n; go(k); if (pendingAnnounce) speak(pendingAnnounce); pendingAnnounce = null; return; }
+    var c = null; S.custom.forEach(function(x){ if (x.id === k) c = x; });
+    if (!c) return;
+    curCustom = c; go("custom"); if (session) session.tools.push(k);
+  }
+  function validPlan(){ return S.plan.filter(function(k){ return !!itemInfo(k); }); }
+  function toolDone(){ if (session) go("check"); else go("tools"); }
+
+  var INIT = {};
+
+  // ----- Respiration guidée -----
+  var NUMS = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit"];
+  function breathVoiceOn(){ return S.breathVoice !== false; }
+  function bspeak(t){
+    if (pendingAnnounce){ t = pendingAnnounce + ". " + t; pendingAnnounce = null; }
+    if (!breathVoiceOn()) return;
+    speak(t, true);
+  }
+  function refreshBreathVoice(){ $("breatheVoice").textContent = breathVoiceOn() ? "🔊 Voix guide : oui" : "🔈 Voix guide : non"; }
+  function breathWords(){
+    if (S.age === "petit") return { i:"Sens la fleur", e:"Souffle la bougie" };
+    if (S.age === "grand") return { i:"Inspire", e:"Expire doucement" };
+    return { i:"Inspire par le nez", e:"Souffle doucement" };
+  }
+  function explainText(){
+    if (S.age === "petit") return "Inspirer, c’est comme sentir une fleur : l’air entre doucement par ton nez, et ton ventre se gonfle comme un ballon. Expirer, c’est comme souffler une bougie : l’air ressort tout doucement par ta bouche, et ton ventre se dégonfle. Quand la bulle grandit, tu sens la fleur. Quand elle rétrécit, tu souffles la bougie.";
+    return "Inspirer, c’est faire entrer l’air par ton nez : ton ventre se gonfle comme un ballon. Expirer, c’est laisser ressortir l’air tout doucement par ta bouche : ton ventre se dégonfle. Quand la bulle grandit, tu inspires. Quand elle rétrécit, tu expires. On souffle plus longtemps qu’on inspire : c’est ça qui calme. Pose une main sur ton ventre pour le sentir bouger.";
+  }
+  function explainHTML(){
+    var p = S.age === "petit";
+    return '<span class="bx"><b>👃 ' + (p ? "Inspirer" : "Inspirer") + '</b>' + (p ? "Comme sentir une fleur 🌸 : l’air entre par ton nez. Ton ventre se gonfle." : "L’air entre par ton nez. Ton ventre se gonfle comme un ballon.") + '<i>La bulle grandit</i></span>'
+      + '<span class="bx"><b>🌬️ Expirer</b>' + (p ? "Comme souffler une bougie 🕯️ : l’air sort tout doucement par ta bouche." : "L’air ressort tout doucement par ta bouche. Ton ventre se dégonfle.") + '<i>La bulle rétrécit</i></span>'
+      + '<span class="bx"><b>✋ Astuce</b>Pose une main sur ton ventre pour le sentir bouger.</span>';
+  }
+  function breathIntro(){
+    clearTimers(); var bubble = $("bubble");
+    bubble.classList.remove("in"); bubble.firstChild.textContent = A().inE;
+    $("breatheText").textContent = ""; $("breatheCount").textContent = "";
+    $("breatheExplain").innerHTML = explainHTML(); $("breatheIntro").hidden = false; $("breatheHelp").hidden = true;
+    bspeak(explainText());
+  }
+  function breathRun(){
+    var a = A(), w = breathWords(), total = a.cycles, i = 0;
+    var bubble = $("bubble"), txt = $("breatheText"), cnt = $("breatheCount");
+    $("breatheIntro").hidden = true; $("breatheHelp").hidden = false;
+    function phase(ms, word, label, grow, next){
+      var n = Math.max(2, Math.round(ms / 1000)), step = ms / n, k = 1;
+      txt.textContent = label; bubble.firstChild.textContent = "1";
+      bubble.style.transitionDuration = (ms / 1000) + "s"; bubble.classList.toggle("in", grow);
+      bspeak(word);
+      function tick(){
+        k++;
+        if (k > n){ next(); return; }
+        bubble.firstChild.textContent = String(k); bspeak(NUMS[k] || String(k));
+        later(tick, step);
+      }
+      later(tick, step);
+    }
+    function cycle(){
+      if (i >= total){
+        bubble.classList.remove("in"); bubble.firstChild.textContent = "⭐"; cnt.textContent = "";
+        txt.textContent = "Bravo, tu as très bien respiré !"; bspeak("Bravo, tu as très bien respiré.");
+        later(function(){ toolDone(); }, 3000); return;
+      }
+      cnt.textContent = "Respiration " + (i + 1) + " sur " + total;
+      phase(a.inh, w.i, a.inTxt, true, function(){
+        later(function(){ phase(a.exh, w.e, a.exTxt, false, function(){ i++; later(cycle, 500); }); }, 300);
+      });
+    }
+    cycle();
+  }
+  $("breatheGo").onclick = function(){ S.breathSeen = (S.breathSeen || 0) + 1; save(); stopSpeech(); $("breatheIntro").hidden = true; $("breatheText").textContent = "C’est parti…"; later(breathRun, 900); };
+  $("breatheHelp").onclick = breathIntro;
+  $("breatheVoice").onclick = function(){ S.breathVoice = !breathVoiceOn(); save(); refreshBreathVoice(); if (!breathVoiceOn()) stopSpeech(); };
+  INIT.breathe = function(){
+    var crisis = session && session.from >= 4;
+    var head = crisis ? ("Tu es en sécurité, " + S.name + ". Je suis là.") : "Pause respiration";
+    $("breatheHead").textContent = head; refreshBreathVoice();
+    var bubble = $("bubble"); bubble.classList.remove("in"); bubble.firstChild.textContent = A().inE; $("breatheCount").textContent = "";
+    if (!crisis && (S.breathSeen || 0) < 3){ breathIntro(); return; }
+    $("breatheIntro").hidden = true; $("breatheHelp").hidden = false;
+    var lead = (crisis ? head + " " : "On respire ensemble. ") + "Regarde la bulle. Quand elle grandit, tu inspires par le nez. Quand elle rétrécit, tu souffles par la bouche.";
+    $("breatheText").textContent = "Regarde la bulle…";
+    bspeak(lead);
+    later(breathRun, breathVoiceOn() ? (crisis ? 9500 : 7500) : 2000);
+  };
+
+  INIT.square = function(){
+    var dot = $("sqDot"), t = $("sqText");
+    var pos = [["-20px","calc(100% - 14px)"],["-20px","-20px"],["calc(100% - 14px)","-20px"],["calc(100% - 14px)","calc(100% - 14px)"]];
+    var labels = ["Inspire par le nez…","Garde l’air…","Souffle doucement…","Attends un peu…"];
+    var k = 0, laps = 0;
+    dot.style.transition = "none"; dot.style.left = pos[0][0]; dot.style.top = pos[0][1];
+    t.textContent = "Prêt ?";
+    function step(){
+      if (laps >= 4){ t.textContent = "Bravo, 4 tours !"; later(toolDone, 1800); return; }
+      var sd = A().side / 1000; dot.style.transition = "left " + sd + "s linear, top " + sd + "s linear";
+      var next = (k + 1) % 4;
+      t.textContent = labels[k]; bspeak(labels[k].replace(/…/g, ""));
+      dot.style.left = pos[next][0]; dot.style.top = pos[next][1];
+      k = next; if (k === 0) laps++;
+      later(step, A().side);
+    }
+    later(step, 900);
+  };
+
+  var G_SHORT = [
+    {n:3, t:"choses que tu vois 👀"},
+    {n:2, t:"choses que tu peux toucher ✋"},
+    {n:1, t:"bruit que tu entends 👂"}
+  ];
+  var G = [
+    {n:5, t:"choses que tu vois 👀"},
+    {n:4, t:"choses que tu peux toucher ✋"},
+    {n:3, t:"bruits que tu entends 👂"},
+    {n:2, t:"odeurs que tu sens 👃"},
+    {n:1, t:"chose que tu aimes bien 💛"}
+  ];
+  var G_FULL = G, gi = 0, gc = 0;
+  var HINTS = {
+    "👀":[["🪟","Une fenêtre"],["💡","Une lampe"],["🪴","Une plante"],["📚","Un livre"],["🚪","Une porte"],["👟","Une chaussure"],["🧸","Un doudou"],["🕰️","Une horloge"]],
+    "✋":[["🛋️","Le canapé"],["👕","Ton t-shirt"],["🧱","Le mur"],["🪑","Une chaise"],["🧦","Tes chaussettes"],["🛏️","Une couverture"],["💇","Tes cheveux"],["🐶","Un animal"]],
+    "👂":[["🚗","Une voiture"],["🐦","Un oiseau"],["🌬️","Ta respiration"],["📺","La télé"],["🗣️","Une voix"],["⏰","Un tic-tac"],["🍃","Le vent"],["🚰","De l’eau"]],
+    "👃":[["🧼","Le savon"],["🍊","Un fruit"],["👕","Ton pull"],["🍞","La cuisine"],["🌸","Une fleur"],["🧴","Une crème"],["☕","Le café"],["🌳","Le dehors"]],
+    "💛":[["🐶","Un animal"],["⚽","Le foot"],["🎮","Un jeu"],["🍫","Un goûter"],["👫","Un copain"],["🎨","Dessiner"],["🎵","La musique"],["🏊","La piscine"]]
+  };
+  var usedHints = [];
+  function hintsFor(g){ for (var k in HINTS) if (g.t.indexOf(k) >= 0) return HINTS[k]; return []; }
+  function gRender(){
+    var g = G[gi];
+    $("gNum").textContent = g.n; $("gText").textContent = "Trouve " + g.n + " " + g.t;
+    var d = $("gDots"); d.innerHTML = "";
+    for (var i = 0; i < g.n; i++){ var s = document.createElement("span"); s.className = "dot" + (i < gc ? " on" : ""); d.appendChild(s); }
+    $("gRow").innerHTML = '<button class="btn" id="gFound">J’en ai trouvé un !</button>';
+    $("gFound").onclick = gFound;
+    var hb = $("gHints"); hb.innerHTML = ""; $("hintLabel").hidden = false;
+    hintsFor(g).forEach(function(hn, idx){
+      var b = document.createElement("button"); b.className = "hint" + (usedHints.indexOf(idx) >= 0 ? " on" : "");
+      b.innerHTML = '<span class="e" aria-hidden="true">' + hn[0] + '</span>'; b.appendChild(document.createTextNode(hn[1]));
+      b.onclick = function(){ if (usedHints.indexOf(idx) >= 0) return; usedHints.push(idx); speak(hn[1]); gFound(); };
+      hb.appendChild(b);
+    });
+  }
+  function gFound(){
+    gc++;
+    if (gc >= G[gi].n){
+      gi++; gc = 0; usedHints = [];
+      if (gi >= G.length){
+        $("gNum").textContent = "🌍"; $("gText").textContent = "Tu es revenu ici, avec nous.";
+        $("gDots").innerHTML = ""; $("gHints").innerHTML = ""; $("hintLabel").hidden = true;
+        $("gRow").innerHTML = '<button class="btn" id="gEnd">J’ai fini</button>'; $("gEnd").onclick = toolDone;
+        speak("Tu es revenu ici, avec nous."); return;
+      }
+      speak("Trouve " + G[gi].n + " " + G[gi].t.replace(/\s\S+$/, ""));
+    }
+    gRender();
+  }
+  INIT.ground = function(){ G = S.age === "petit" ? G_SHORT : G_FULL; gi = 0; gc = 0; usedHints = []; gRender(); speak("Trouve " + G[0].n + " choses que tu vois."); };
+
+  function buildPops(){
+    var n = A().pops, grid = $("popGrid"); grid.innerHTML = ""; var left = n;
+    grid.style.gridTemplateColumns = "repeat(" + (n <= 16 ? 4 : 5) + ",1fr)";
+    $("popLeft").textContent = "Encore " + left + " bulles";
+    for (var i = 0; i < n; i++){
+      var b = document.createElement("button"); b.className = "pop"; b.setAttribute("aria-label","Bulle");
+      b.onclick = function(){ this.classList.add("popped"); pop(); left--;
+        $("popLeft").textContent = left > 0 ? ("Encore " + left + " bulles") : "Toutes éclatées ! 🎉"; };
+      grid.appendChild(b);
+    }
+  }
+  INIT.bubbles = buildPops;
+
+  // ----- Dictée -----
+  var dict = null, sr = null, listening = false, micBase = "";
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (window.claude && window.claude.use){
+    window.claude.use("dictation").then(function(d){
+      dict = d; if (!d) return;
+      d.onPartial(function(r){ $("worry").value = micBase + r.text; });
+      d.onFinal(function(r){ micBase = micBase + r.text + " "; $("worry").value = micBase; });
+      d.onState(function(s){ listening = s.state !== "idle"; micUI(); });
+    }).catch(function(){});
+  }
+  function micUI(){ $("micBtn").textContent = listening ? "⏹️ J’ai fini de parler" : "🎤 Dire mon souci"; }
+  function micFallback(){
+    listening = false; micUI();
+    $("micHelp").textContent = "Touche le micro 🎤 en bas du clavier, et parle."; $("micHelp").style.fontWeight = "700";
+    $("worry").focus();
+  }
+  function stopMic(){
+    if (dict && listening) dict.stop().catch(function(){});
+    if (sr){ try { sr.stop(); } catch(e){} sr = null; }
+    listening = false; if ($("micBtn")) micUI();
+  }
+  $("micBtn").onclick = function(){
+    if (listening){ stopMic(); return; }
+    micBase = $("worry").value.trim() ? $("worry").value.trim() + " " : "";
+    if (dict){
+      dict.start().catch(function(e){ if (!e || e.code !== "dismissed") micFallback(); });
+      listening = true; micUI(); return;
+    }
+    if (SR){
+      try {
+        sr = new SR(); sr.lang = "fr-FR"; sr.interimResults = true; sr.continuous = true;
+        sr.onresult = function(ev){
+          var fin = "", tmp = "";
+          for (var i = 0; i < ev.results.length; i++){ if (ev.results[i].isFinal) fin += ev.results[i][0].transcript + " "; else tmp += ev.results[i][0].transcript; }
+          $("worry").value = micBase + fin + tmp;
+        };
+        sr.onerror = function(){ sr = null; micFallback(); };
+        sr.onend = function(){ sr = null; listening = false; micUI(); };
+        sr.start(); listening = true; micUI(); speak("Je t’écoute.");
+      } catch(e){ micFallback(); }
+      return;
+    }
+    micFallback();
+  };
+  $("sayBtn").onclick = function(){
+    stopMic();
+    $("worry").hidden = true; $("micRow").hidden = true; $("micHelp").hidden = true;
+    $("balloonTxt").textContent = "🔊";
+    $("balloonLead").textContent = "Dis ton souci tout fort au ballon. Il va l’emporter avec lui.";
+    speak("Dis ton souci tout fort au ballon. Il va l’emporter avec lui.");
+  };
+
+  INIT["balloon-s"] = function(){
+    stopMic(); $("worry").hidden = false; $("micRow").hidden = false; $("micHelp").hidden = false;
+    $("micHelp").textContent = "Tu peux aussi toucher le micro 🎤 du clavier, et parler."; $("micHelp").style.fontWeight = "";
+    $("worry").value = ""; $("balloon").classList.remove("away");
+    $("balloonTxt").textContent = "?";
+    $("balloonLead").textContent = S.age === "petit" ? "Dis ton souci tout bas à un adulte, qui peut l’écrire pour toi. Ou pense-le très fort." : (S.age === "grand" ? "Écris ce qui te pèse. Personne d’autre ne le lira." : "Écris ce qui t’embête. Ou pense-le très fort dans ta tête.");
+    $("balloonRow").innerHTML = '<button class="btn" id="letGo">🎈 Laisse partir le ballon</button>';
+    $("letGo").onclick = function(){
+      stopMic(); $("micRow").hidden = true; $("micHelp").hidden = true;
+      var w = $("worry").value.trim(); $("balloonTxt").textContent = w || "mon souci";
+      later(function(){ $("balloon").classList.add("away"); }, 400);
+      later(function(){
+        $("balloonLead").textContent = "Il est parti très loin. Tu n’as plus à le porter tout seul.";
+        speak("Il est parti très loin. Tu n’as plus à le porter tout seul.");
+        $("balloonRow").innerHTML = '<button class="btn soft" id="again">Un autre souci</button><button class="btn" id="bEnd">J’ai fini</button>';
+        $("again").onclick = INIT["balloon-s"]; $("bEnd").onclick = toolDone;
+      }, 5000);
+    };
+  };
+
+  function setKid(m){
+    var t = m.t.toLowerCase(), a = "walk", extra = "";
+    if (/pompes|pousse le mur/.test(t)) { a = "push"; extra = " wall-r"; }
+    else if (/étoile|jumping/.test(t)) a = "star";
+    else if (/kangourou/.test(t)) a = "jump";
+    else if (/chien/.test(t)) a = "shake";
+    else if (/statue/.test(t)) a = "statue";
+    else if (/poings|contracte/.test(t)) a = "squeeze";
+    else if (/chaise/.test(t)) { a = "chair"; extra = " wall-b"; }
+    else if (/crabe/.test(t)) a = "crab";
+    else if (/ballon|gonfle/.test(t)) a = "inflate";
+    else if (/planche/.test(t)) a = "plank";
+    else if (/tortue/.test(t)) extra = " slow";
+    if (/cartable|sac/.test(t)) extra += " bag";
+    var k = $("kid"); k.setAttribute("class", "kid"); void k.getBoundingClientRect(); k.setAttribute("class", "kid a-" + a + extra);
+  }
+  var mi = -1;
+  function nextMove(){
+    clearTimers(); var n; do { n = Math.floor(Math.random()*MOVES.length); } while (n === mi && MOVES.length > 1); mi = n;
+    var m = MOVES[mi]; setKid(m); $("moveT").textContent = m.t; $("moveTimer").textContent = m.s + " s";
+    speak(m.t);
+  }
+  INIT.move = function(){ MOVES = S.age === "grand" ? MOVES_GRAND : (S.age === "moyen" ? MOVES_MOYEN : MOVES_PETIT); mi = -1; nextMove(); };
+  $("moveNext").onclick = nextMove;
+  $("moveGo").onclick = function(){
+    clearTimers(); var s = MOVES[mi].s; $("moveTimer").textContent = s;
+    function tick(){ s--; if (s <= 0){ $("moveTimer").textContent = "Bravo ! 💪"; speak("Bravo !"); return; } $("moveTimer").textContent = s; later(tick, 1000); }
+    later(tick, 1000);
+  };
+
+  var wi = -1;
+  function allWords(){ return S.phrases.concat(S.age === "grand" ? WORDS_GRAND : BASE_WORDS); }
+  function nextWord(){ var list = allWords(); wi = (wi + 1) % list.length; $("wordCard").textContent = list[wi]; speak(list[wi]); }
+  INIT.words = function(){ wi = -1; nextWord(); };
+  $("wordNext").onclick = nextWord;
+
+  INIT.hug = function(){ $("hugLead").textContent = S.age === "grand" ? "Tu peux juste dire : « J’ai besoin d’un câlin » ou « J’ai besoin d’aide »." : "Tu peux juste dire : « Câlin ? »"; speak("Va voir Papa, Maman, ou un adulte que tu aimes. Tu peux juste dire : câlin ?"); };
+  INIT.check = function(){ speak("Et maintenant, quel temps fait-il dans ta tête ?"); };
+  INIT.choose = function(){
+    var plan = validPlan();
+    var spotted = session && session.signs && session.signs.length;
+    $("chooseMore").classList.remove("on");
+    if (plan.length){
+      $("chooseHead").textContent = "Ton plan de calme";
+      $("chooseLead").textContent = spotted ? "Bien repéré ! Choisis ce qui t’aide." : "Choisis ce qui t’aide.";
+      fillChoices($("choosePlan"), plan);
+      fillChoices($("chooseMore"), allItems().filter(function(k){ return plan.indexOf(k) < 0; }));
+      $("moreRow").hidden = false;
+    } else {
+      $("chooseHead").textContent = "Qu’est-ce qui pourrait t’aider ?";
+      $("chooseLead").textContent = spotted ? "Bien repéré ! Choisis ce que tu veux." : "Choisis ce que tu veux. Il n’y a pas de mauvais choix.";
+      fillChoices($("choosePlan"), allItems());
+      $("moreRow").hidden = true;
+    }
+    speak(plan.length ? "Regarde ton plan de calme. Qu’est-ce qui t’aide ?" : "Qu’est-ce qui pourrait t’aider ?");
+  };
+  $("moreBtn").onclick = function(){ $("chooseMore").classList.add("on"); $("moreRow").hidden = true; };
+
+  INIT.custom = function(){ if (!curCustom) return; $("cE").textContent = curCustom.e; $("cT").textContent = curCustom.t; speak(curCustom.t); };
+
+  // ----- Mon plan (vue enfant) -----
+  INIT.plan = function(){
+    $("planHead").textContent = "Le plan de calme de " + S.name;
+    var plan = validPlan();
+    $("planEmpty").hidden = !!(plan.length || S.signs.length);
+    $("planSignsCard").hidden = !S.signs.length;
+    $("planItemsCard").hidden = !plan.length;
+    var box = $("planSigns"); box.innerHTML = "";
+    S.signs.forEach(function(k){ var s = signInfo(k); if (!s) return; var c = document.createElement("span"); c.className = "chip"; c.textContent = s.e + " " + s.t; box.appendChild(c); });
+    fillChoices($("planItems"), plan);
+  };
+
+  // ----- Où je le sens -----
+  var bodySel = [];
+  INIT.body = function(){
+    bodySel = [];
+    var g = $("bodyGrid"); g.innerHTML = "";
+    SIGNS.forEach(function(s){
+      var b = document.createElement("button"); b.className = "choice";
+      b.innerHTML = '<span class="e" aria-hidden="true">'+s.e+'</span>' + s.t;
+      b.onclick = function(){ var i = bodySel.indexOf(s.k); if (i < 0) bodySel.push(s.k); else bodySel.splice(i,1); b.classList.toggle("on", i < 0); };
+      g.appendChild(b);
+    });
+    speak("Où tu le sens dans ton corps ?");
+  };
+  $("bodyOk").onclick = function(){
+    if (session){ session.signs = uniq((session.signs || []).concat(bodySel)); go("choose"); }
+    else { go(validPlan().length ? "plan" : "tools"); }
+    speak("Bien repéré ! Ton corps te prévient. C’est le bon moment pour te calmer.");
+  };
+
+  // ----- Sons calmes (générés, sans fichier) -----
+  var AC = null, snd = null, curSound = null, bufs = {};
+  function ac(){ AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); return AC; }
+  function noise(type){
+    if (bufs[type]) return bufs[type];
+    var a = ac(), len = a.sampleRate * 4, b = a.createBuffer(1, len, a.sampleRate), d = b.getChannelData(0), last = 0;
+    for (var i = 0; i < len; i++){ var w = Math.random()*2 - 1; if (type === "brown"){ last = (last + 0.02*w) / 1.02; d[i] = last * 3.5; } else d[i] = w; }
+    return (bufs[type] = b);
+  }
+  function playSound(kind){
+    stopSound();
+    var a; try { a = ac(); } catch(e){ return; }
+    var t = a.currentTime, master = a.createGain(), nodes = [master];
+    master.gain.setValueAtTime(0, t); master.gain.linearRampToValueAtTime(1, t + 1.5); master.connect(a.destination);
+    function src(type){ var s = a.createBufferSource(); s.buffer = noise(type); s.loop = true; s.start(); nodes.push(s); return s; }
+    function filt(type, f, q){ var n = a.createBiquadFilter(); n.type = type; n.frequency.value = f; if (q) n.Q.value = q; nodes.push(n); return n; }
+    function gain(v){ var g = a.createGain(); g.gain.value = v; nodes.push(g); return g; }
+    function lfo(freq, depth, target){ var o = a.createOscillator(), g = a.createGain(); o.frequency.value = freq; g.gain.value = depth; o.connect(g); g.connect(target); o.start(); nodes.push(o, g); }
+    if (kind === "rain"){
+      var hp = filt("highpass", 500), lp = filt("lowpass", 5000), g1 = gain(.16); src("white").connect(hp); hp.connect(lp); lp.connect(g1); g1.connect(master);
+      var lp2 = filt("lowpass", 400), g2 = gain(.35); src("brown").connect(lp2); lp2.connect(g2); g2.connect(master);
+    } else if (kind === "waves"){
+      var lpw = filt("lowpass", 750), gw = gain(.28); src("brown").connect(lpw); lpw.connect(gw); gw.connect(master); lfo(0.11, .24, gw.gain);
+    } else if (kind === "wind"){
+      var bp = filt("bandpass", 550, 1.8), gv = gain(.32); src("white").connect(bp); bp.connect(gv); gv.connect(master); lfo(0.07, 280, bp.frequency); lfo(0.05, .12, gv.gain);
+    } else {
+      var lps = filt("lowpass", 380), gs = gain(.55); src("brown").connect(lps); lps.connect(gs); gs.connect(master);
+    }
+    snd = { master:master, nodes:nodes }; curSound = kind; refreshSoundUI();
+  }
+  function stopSound(){
+    if (!snd) return;
+    var s = snd; snd = null; curSound = null;
+    try { var t = AC.currentTime; s.master.gain.cancelScheduledValues(t); s.master.gain.setValueAtTime(s.master.gain.value, t); s.master.gain.linearRampToValueAtTime(0, t + .5); } catch(e){}
+    setTimeout(function(){ s.nodes.forEach(function(n){ try { if (n.stop) n.stop(); } catch(e){} try { n.disconnect(); } catch(e){} }); }, 650);
+    refreshSoundUI();
+  }
+  function toggleSound(k){ if (curSound === k) stopSound(); else playSound(k); }
+  function refreshSoundUI(){ document.querySelectorAll("[data-snd]").forEach(function(b){ b.classList.toggle("on", b.dataset.snd === curSound); }); }
+  function soundButtons(box, chip){
+    box.innerHTML = "";
+    SOUNDS.forEach(function(s){
+      var b = document.createElement("button"); b.className = chip ? "chip" : "choice"; b.dataset.snd = s.k;
+      b.innerHTML = chip ? (s.e + " " + s.n) : ('<span class="e" aria-hidden="true">'+s.e+'</span>' + s.n);
+      b.onclick = function(){ toggleSound(s.k); };
+      box.appendChild(b);
+    });
+    refreshSoundUI();
+  }
+  INIT.sounds = function(){ soundButtons($("soundGrid"), false); };
+
+  // ----- Bocal à paillettes -----
+  var anim = null, parts = [], jarDone = false, jw = 0, jh = 0, lastT = 0, lastShake = 0;
+  var GLITTER = ["#F2C14E","#E89BBE","#6FC3C9","#A99BE6","#F5D98C"];
+  function stopAnim(){ if (anim){ cancelAnimationFrame(anim); anim = null; } }
+  function jarShake(power){
+    var now = Date.now(); if (now - lastShake < 250) return; lastShake = now;
+    parts.forEach(function(p){ p.vx += (Math.random() - .5) * 14 * power; p.vy -= (2 + Math.random() * 9) * power; p.settled = false; });
+    jarDone = false; $("jarText").textContent = "Regarde les paillettes tomber tout doucement…";
+  }
+  function jarLoop(ts){
+    var c = $("jarCanvas"), ctx = c.getContext("2d");
+    var k = lastT ? Math.min(3, (ts - lastT) / 16.67) : 1; lastT = ts;
+    ctx.clearRect(0, 0, jw, jh);
+    var settled = 0;
+    parts.forEach(function(p){
+      if (!p.settled){
+        p.vy += (p.vt - p.vy) * 0.02 * k; p.vx *= Math.pow(0.97, k);
+        p.x += (p.vx + Math.sin(ts * 0.0012 + p.ph) * 0.18) * k; p.y += p.vy * k;
+        if (p.x < 3){ p.x = 3; p.vx = Math.abs(p.vx) * .5; } if (p.x > jw - 3){ p.x = jw - 3; p.vx = -Math.abs(p.vx) * .5; }
+        if (p.y < 3){ p.y = 3; p.vy = Math.abs(p.vy) * .3; }
+        var floor = jh - 4 - p.stack; if (p.y >= floor && p.vy >= 0){ p.y = floor; p.settled = true; }
+      } else settled++;
+      ctx.globalAlpha = 0.65 + 0.35 * Math.sin(ts * 0.003 + p.ph);
+      ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    if (!jarDone && settled / parts.length > 0.97){
+      jarDone = true; $("jarText").textContent = "Tout est posé. Ton orage aussi peut se poser. 🌙";
+      speak("Tout est posé. Ton orage aussi peut se poser.");
+    }
+    anim = requestAnimationFrame(jarLoop);
+  }
+  INIT.jar = function(){
+    var c = $("jarCanvas"), r = c.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    jw = r.width; jh = r.height; c.width = jw * dpr; c.height = jh * dpr; c.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0);
+    parts = [];
+    for (var i = 0; i < 300; i++) parts.push({ x:Math.random()*jw, y:Math.random()*jh*0.9, vx:(Math.random()-.5)*2, vy:-Math.random()*2,
+      vt:0.25 + Math.random()*0.45, r:1.4 + Math.random()*2.4, ph:Math.random()*6.28, stack:Math.random()*22, col:GLITTER[i % GLITTER.length], settled:false });
+    jarDone = false; lastT = 0;
+    $("jarText").textContent = "Regarde les paillettes tomber tout doucement…";
+    soundButtons($("jarSounds"), true);
+    speak("Regarde les paillettes tomber tout doucement.");
+    anim = requestAnimationFrame(jarLoop);
+  };
+  var motionAsked = false;
+  function askMotion(){
+    if (motionAsked) return; motionAsked = true;
+    try { if (window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === "function") DeviceMotionEvent.requestPermission().catch(function(){}); } catch(e){}
+  }
+  window.addEventListener("devicemotion", function(e){
+    if (!$("jar").classList.contains("on")) return;
+    var a = e.acceleration; var m;
+    if (a && a.x !== null) m = Math.sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
+    else { a = e.accelerationIncludingGravity; if (!a) return; m = Math.abs(Math.sqrt(a.x*a.x + a.y*a.y + a.z*a.z) - 9.81); }
+    if (m > 11) jarShake(0.8);
+  });
+  $("jarShake").onclick = function(){ askMotion(); jarShake(1); };
+  $("jarBox").addEventListener("pointerdown", function(){ askMotion(); jarShake(0.7); });
+
+  // ----- Minuteur visuel -----
+  var tm = { end:0, total:0 };
+  function chime(){
+    try { var a = ac(); [660, 880, 990].forEach(function(f, i){ var o = a.createOscillator(), g = a.createGain(), t = a.currentTime + i * 0.35;
+      o.frequency.value = f; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.25, t + .02); g.gain.exponentialRampToValueAtTime(.001, t + 1.2);
+      o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + 1.3); }); } catch(e){}
+  }
+  INIT.timer = function(){
+    $("tSetup").hidden = false; $("tRun").hidden = true;
+    var d = $("tDur"); d.innerHTML = "";
+    [1, 2, 5, 10, 15, 20].forEach(function(m){ var b = document.createElement("button"); b.className = "btn"; b.textContent = m + " min"; b.onclick = function(){ startTimer(m); }; d.appendChild(b); });
+  };
+  function startTimer(m){
+    try { ac(); } catch(e){}
+    tm.total = m * 60000; tm.end = Date.now() + tm.total;
+    var f = $("tFirst").value.trim(), t = $("tThen").value.trim();
+    $("tF").textContent = f || "—"; $("tT").textContent = t || "—"; $("tFT").hidden = !(f || t);
+    $("tMsg").textContent = "Le temps passe…";
+    $("tSetup").hidden = true; $("tRun").hidden = false;
+    speak((f ? "D’abord : " + f + ". " : "") + (t ? "Ensuite : " + t + "." : ""));
+    tick(); timers.push(setInterval(tick, 250));
+  }
+  function tick(){
+    var rem = tm.end - Date.now();
+    if (rem <= 0){
+      if ($("tLeft").textContent === "⏰") return;
+      $("tDial").style.setProperty("--deg", "0deg"); $("tLeft").textContent = "⏰";
+      var t = $("tThen").value.trim();
+      $("tMsg").textContent = t ? ("C’est l’heure ! Maintenant : " + t) : "C’est l’heure !";
+      chime(); speak($("tMsg").textContent);
+      try { if (navigator.vibrate) navigator.vibrate([300, 150, 300]); } catch(e){}
+      return;
+    }
+    $("tDial").style.setProperty("--deg", (rem / tm.total * 360) + "deg");
+    var s = Math.ceil(rem / 1000); $("tLeft").textContent = Math.floor(s / 60) + ":" + ("0" + (s % 60)).slice(-2);
+  }
+  $("tPlus").onclick = function(){
+    if (tm.end < Date.now()){ tm.end = Date.now(); tm.total = 0; $("tLeft").textContent = ""; $("tMsg").textContent = "Le temps passe…"; timers.push(setInterval(tick, 250)); }
+    tm.end += 60000; tm.total += 60000; tick();
+  };
+  $("tStop").onclick = function(){ clearTimers(); INIT.timer(); };
+
+  // ----- Plan de calme (espace parent) -----
+  var ppEmoji = EMOJIS[0];
+  function renderPlanParent(){
+    var box = $("ppItems"); box.innerHTML = "";
+    allItems().forEach(function(k){
+      var info = itemInfo(k), i = S.plan.indexOf(k);
+      var b = document.createElement("button"); b.className = "chip" + (i >= 0 ? " on" : "");
+      b.innerHTML = (i >= 0 ? '<span class="n">' + (i + 1) + '</span>' : "") + info.e + " ";
+      b.appendChild(document.createTextNode(info.n));
+      b.onclick = function(){
+        var j = S.plan.indexOf(k);
+        if (j >= 0) S.plan.splice(j, 1); else if (S.plan.length < 4) S.plan.push(k); else return;
+        save(); renderPlanParent();
+      };
+      box.appendChild(b);
+    });
+    var eb = $("ppEmoji"); eb.innerHTML = "";
+    EMOJIS.forEach(function(e){ var b = document.createElement("button"); b.className = "chip" + (e === ppEmoji ? " on" : ""); b.textContent = e; b.setAttribute("aria-label", "Icône " + e);
+      b.onclick = function(){ ppEmoji = e; renderPlanParent(); }; eb.appendChild(b); });
+    var ul = $("ppCustom"); ul.innerHTML = "";
+    S.custom.forEach(function(c){
+      var li = document.createElement("li"); li.textContent = c.e + " " + c.t + " ";
+      var del = document.createElement("button"); del.textContent = "retirer";
+      del.onclick = function(){ S.custom = S.custom.filter(function(x){ return x.id !== c.id; }); S.plan = S.plan.filter(function(x){ return x !== c.id; }); save(); buildChoices(); renderPlanParent(); };
+      li.appendChild(del); ul.appendChild(li);
+    });
+    var sb = $("ppSigns"); sb.innerHTML = "";
+    SIGNS.forEach(function(s){
+      var on = S.signs.indexOf(s.k) >= 0;
+      var b = document.createElement("button"); b.className = "chip" + (on ? " on" : ""); b.textContent = s.e + " " + s.t;
+      b.onclick = function(){ var j = S.signs.indexOf(s.k); if (j >= 0) S.signs.splice(j, 1); else S.signs.push(s.k); save(); renderPlanParent(); };
+      sb.appendChild(b);
+    });
+  }
+  $("ppAdd").onclick = function(){
+    var t = $("ppText").value.trim(); if (!t) return;
+    var c = { id:"c" + Date.now(), e:ppEmoji, t:t }; S.custom.push(c);
+    if (S.plan.length < 4) S.plan.push(c.id);
+    $("ppText").value = ""; save(); buildChoices(); renderPlanParent();
+  };
+  // ----- Trophées : un toutes les 5 étoiles -----
+  var TROPHIES = [
+    {e:"🧭", n:"Explorateur du calme", d:"Tu as découvert que tu pouvais ramener le soleil."},
+    {e:"☁️", n:"Chasseur de nuages", d:"Les nuages gris n’ont qu’à bien se tenir !"},
+    {e:"🌬️", n:"Maître du souffle", d:"Ta respiration devient ta super-force."},
+    {e:"⚡", n:"Dompteur d’orages", d:"Même les gros orages, tu sais les calmer."},
+    {e:"☀️", n:"Gardien du soleil", d:"Tu sais le retrouver, même quand il se cache."},
+    {e:"🌊", n:"Surfeur de vagues", d:"Les émotions sont des vagues, et tu sais les surfer."},
+    {e:"🏔️", n:"Montagne tranquille", d:"Solide comme une montagne, même dans le vent."},
+    {e:"⚓", n:"Capitaine de la tempête", d:"Tu tiens la barre de ton bateau, même quand ça secoue."},
+    {e:"🌈", n:"Héros de l’arc-en-ciel", d:"Après chaque pluie, tu fais revenir les couleurs."},
+    {e:"🏆", n:"Légende du calme", d:"Tu es devenu un vrai champion du calme. Bravo !"}
+  ];
+  var LEVELS = ["", " II", " III", " IV", " V", " VI", " VII", " VIII", " IX", " X"];
+  function trophyAt(i){
+    var t = TROPHIES[i % TROPHIES.length], lvl = Math.floor(i / TROPHIES.length);
+    return { e:t.e, n:t.n + (lvl === 0 ? "" : (LEVELS[lvl] || (" " + (lvl + 1)))), d:t.d };
+  }
+  var justTrophy = null;
+  function nextTrophyInfo(){
+    var won = Math.floor(S.stars / 5), left = 5 - (S.stars % 5);
+    return { won:won, left:left, next:trophyAt(won) };
+  }
+  INIT.trophies = function(){
+    var inf = nextTrophyInfo();
+    $("trophHead").textContent = "Les trophées de " + S.name;
+    $("trophLead").textContent = "⭐ " + S.stars + " étoile" + (S.stars > 1 ? "s" : "") + ". Encore " + inf.left + " étoile" + (inf.left > 1 ? "s" : "") + " pour gagner : " + inf.next.n + ".";
+    $("trophBar").style.width = ((S.stars % 5) / 5 * 100) + "%";
+    var g = $("trophGrid"); g.innerHTML = "";
+    var show = Math.max(TROPHIES.length, inf.won + 1);
+    for (var i = 0; i < show; i++){
+      var t = trophyAt(i), got = i < inf.won;
+      var d = document.createElement("div"); d.className = "trophy" + (got ? "" : " locked") + (i === inf.won ? " next" : "");
+      d.innerHTML = '<span class="e" aria-hidden="true">' + t.e + '</span>';
+      var b = document.createElement("b"); b.textContent = got || i === inf.won ? t.n : "???"; d.appendChild(b);
+      var s = document.createElement("small"); s.textContent = got ? "Gagné !" : ((i + 1) * 5 + " étoiles"); d.appendChild(s);
+      g.appendChild(d);
+    }
+    speak("Tu as " + S.stars + " étoiles. Encore " + inf.left + " pour gagner le trophée : " + inf.next.n + ".");
+  };
+  INIT.bravo = function(){
+    $("bravoHead").textContent = "Bravo " + S.name + " !";
+    var inf = nextTrophyInfo();
+    if (justTrophy){
+      $("trophyWin").hidden = false; $("twE").textContent = justTrophy.e; $("twN").textContent = "Nouveau trophée : " + justTrophy.n + " !"; $("twD").textContent = justTrophy.d;
+      $("bravoNext").textContent = "";
+      speak("Bravo " + S.name + ". Tu as gagné un nouveau trophée : " + justTrophy.n + ". " + justTrophy.d);
+      justTrophy = null;
+    } else {
+      $("trophyWin").hidden = true;
+      $("bravoNext").textContent = "Encore " + inf.left + " étoile" + (inf.left > 1 ? "s" : "") + " pour gagner le trophée " + inf.next.e + " " + inf.next.n + ".";
+      speak("Bravo " + S.name + ". Tu as ramené le soleil. Encore " + inf.left + " étoile" + (inf.left > 1 ? "s" : "") + " pour ton prochain trophée.");
+    }
+  };
+  INIT.home = function(){ if (session) finishSession(null); refreshTop(); };
+  INIT.parent = function(){ if (!parentOK){ go("pin"); return; } renderLog(); renderSettings(); renderPlanParent(); };
+
+  // ----- Espace parent : code à 4 chiffres -----
+  var parentOK = false, pinMode = "enter", pinBuf = "", pinFirst = "", gateAns = 0;
+  function pinHash(s){ var h = 5381; s = "coincalme:" + s; for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return String(h >>> 0); }
+  function pinSet(mode){
+    pinMode = mode; pinBuf = ""; drawPin(); $("pinMsg").textContent = ""; $("pinGate").hidden = true;
+    $("pinForgot").hidden = mode !== "enter";
+    $("pinHead").textContent = mode === "enter" ? "Espace parent" : "Créer le code parent";
+    $("pinLead").textContent = mode === "enter" ? "Entrez votre code" : (mode === "create1" ? "Choisissez un code à 4 chiffres, que votre enfant ne connaît pas." : "Tapez le code une deuxième fois pour confirmer.");
+  }
+  function drawPin(){ $("pinDots").querySelectorAll("span").forEach(function(d, i){ d.classList.toggle("on", i < pinBuf.length); }); }
+  function pinError(msg){ $("pinMsg").textContent = msg; var d = $("pinDots"); d.classList.remove("shake"); void d.offsetWidth; d.classList.add("shake"); pinBuf = ""; setTimeout(drawPin, 350); }
+  function pinDone(){
+    if (pinMode === "enter"){
+      if (pinHash(pinBuf) === S.pin){ parentOK = true; go("parent"); parentOK = true; }
+      else pinError("Code incorrect");
+    } else if (pinMode === "create1"){ pinFirst = pinBuf; pinSet("create2"); }
+    else {
+      if (pinBuf === pinFirst){ S.pin = pinHash(pinBuf); save(); parentOK = true; go("parent"); parentOK = true; }
+      else { pinSet("create1"); $("pinMsg").textContent = "Les deux codes ne correspondent pas. Recommencez."; }
+    }
+  }
+  function pinKey(k){
+    if (k === "del"){ pinBuf = pinBuf.slice(0, -1); drawPin(); return; }
+    if (pinBuf.length >= 4) return;
+    pinBuf += k; drawPin(); $("pinMsg").textContent = "";
+    if (pinBuf.length === 4) setTimeout(pinDone, 150);
+  }
+  (function buildKeypad(){
+    var kp = $("keypad");
+    ["1","2","3","4","5","6","7","8","9","","0","del"].forEach(function(k){
+      var b = document.createElement("button");
+      if (!k){ b.className = "ghost"; b.disabled = true; b.setAttribute("aria-hidden", "true"); }
+      else if (k === "del"){ b.className = "ghost"; b.textContent = "⌫"; b.setAttribute("aria-label", "Effacer"); b.onclick = function(){ pinKey("del"); }; }
+      else { b.textContent = k; b.onclick = function(){ pinKey(k); }; }
+      kp.appendChild(b);
+    });
+  })();
+  document.addEventListener("keydown", function(e){
+    if (!$("pin").classList.contains("on") || !$("pinGate").hidden) return;
+    if (/^[0-9]$/.test(e.key)) pinKey(e.key); else if (e.key === "Backspace") pinKey("del");
+  });
+  INIT.pin = function(){ pinSet(S.pin ? "enter" : "create1"); };
+  function openParent(){ go("pin"); }
+  $("parentBtn").onclick = openParent;
+  $("pinForgot").onclick = function(){
+    var a = 6 + Math.floor(Math.random() * 4), b = 7 + Math.floor(Math.random() * 3), c = 11 + Math.floor(Math.random() * 20);
+    gateAns = a * b + c; $("gateQ").textContent = "Pour vérifier que vous êtes un adulte : combien font " + a + " × " + b + " + " + c + " ?";
+    $("gateA").value = ""; $("pinGate").hidden = false; $("gateA").focus();
+  };
+  $("gateOk").onclick = function(){
+    if (parseInt($("gateA").value, 10) === gateAns){ pinSet("create1"); }
+    else { $("pinMsg").textContent = "Ce n’est pas la bonne réponse."; $("pinForgot").onclick(); }
+  };
+
+  document.querySelectorAll(".tab").forEach(function(t){
+    t.onclick = function(){
+      document.querySelectorAll(".tab").forEach(function(x){ x.classList.toggle("on", x === t); });
+      document.querySelectorAll(".pane").forEach(function(p){ p.classList.toggle("on", p.id === t.dataset.pane); });
+      if (t.dataset.pane === "pLog") renderLog();
+      if (t.dataset.pane === "pPlan") renderPlanParent();
+    };
+  });
+
+  function fmtDate(iso){ var d = new Date(iso); return d.toLocaleDateString("fr-FR", {weekday:"short", day:"numeric", month:"short"}) + " à " + d.toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit"}); }
+  function mins(a,b){ return Math.max(1, Math.round((new Date(b) - new Date(a))/60000)); }
+  function uniq(a){ return a.filter(function(x,i){ return a.indexOf(x) === i; }); }
+
+  function renderLog(){
+    var list = $("logList"); list.innerHTML = "";
+    var week = Date.now() - 7*864e5;
+    var recent = S.log.filter(function(x){ return new Date(x.start).getTime() > week; });
+    var counts = {};
+    S.log.forEach(function(x){ if (x.to && x.to <= 2 && x.tools.length) { var last = x.tools[x.tools.length-1]; if (itemInfo(last)) counts[last] = (counts[last]||0) + 1; } });
+    var best = Object.keys(counts).sort(function(a,b){ return counts[b]-counts[a]; }).slice(0,3).map(function(k){ var i = itemInfo(k); return i.e + " " + i.n; });
+    $("logSummary").innerHTML = S.log.length
+      ? ("<b>" + recent.length + "</b> moment" + (recent.length>1?"s":"") + " difficile" + (recent.length>1?"s":"") + " ces 7 derniers jours.<br>" + (best.length ? "Ce qui l’aide le plus à se calmer : " + best.join(", ") + "." : "Pas encore assez de données pour savoir ce qui l’aide le plus."))
+      : "Le journal se remplit tout seul quand " + S.name + " utilise l’application pendant un moment difficile. Vous pourrez ajouter le déclencheur après coup.";
+    S.log.forEach(function(x){
+      var div = document.createElement("div"); div.className = "entry";
+      var end = x.to ? (W[x.to].e) : "⏹️";
+      var tools = uniq(x.tools).map(function(k){ var i = itemInfo(k); return i ? i.n : "action retirée"; }).join(", ") || "aucun outil";
+      var sg = (x.signs || []).map(function(k){ var s = signInfo(k); return s ? s.e + " " + s.t : ""; }).filter(Boolean).join(", ");
+      div.innerHTML = '<div class="meta"><span>' + fmtDate(x.start) + '</span><span>' + W[x.from].e + ' → ' + end + ' · ' + mins(x.start, x.end) + ' min</span></div>'
+        + '<div class="tools">' + (x.to ? "" : "Interrompu · ") + 'Outils : ' + tools + (sg ? '<br>Signaux : ' + sg : '') + '</div>'
+        + '<textarea aria-label="Déclencheur et remarques" placeholder="Déclencheur, contexte, ce qui a aidé…"></textarea>';
+      var ta = div.querySelector("textarea"); ta.value = x.note || "";
+      ta.oninput = function(){ x.note = ta.value; save(); };
+      list.appendChild(div);
+    });
+  }
+  $("copyLog").onclick = function(){
+    var txt = "Journal Mon coin calme – " + S.name + "\n\n" + S.log.map(function(x){
+      return fmtDate(x.start) + " : " + W[x.from].n + " → " + (x.to ? W[x.to].n : "interrompu") + " (" + mins(x.start,x.end) + " min). Outils : " + (uniq(x.tools).map(function(k){ var i = itemInfo(k); return i ? i.n : "action retirée"; }).join(", ") || "aucun") + ((x.signs || []).length ? ". Signaux : " + x.signs.map(function(k){ var s = signInfo(k); return s ? s.t : ""; }).join(", ") : "") + (x.note ? ". Note : " + x.note : "");
+    }).join("\n");
+    var b = this;
+    function ok(){ b.textContent = "Copié ✓"; setTimeout(function(){ b.textContent = "Copier le journal"; }, 2000); }
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).then(ok, function(){ prompt("Copiez le texte :", txt); });
+    else prompt("Copiez le texte :", txt);
+  };
+
+  function renderSettings(){
+    $("setName").value = S.name; $("setPron").value = S.namePron || ""; $("setVoice").checked = S.voice; renderVoiceSettings();
+    var ab = $("setAge"); ab.innerHTML = "";
+    Object.keys(AGES).forEach(function(k){ var b = document.createElement("button"); b.className = "chip" + (S.age === k ? " on" : ""); b.textContent = AGES[k].label;
+      b.onclick = function(){ S.age = k; save(); renderSettings(); }; ab.appendChild(b); });
+    var ul = $("myPhrases"); ul.innerHTML = "";
+    S.phrases.forEach(function(p, i){
+      var li = document.createElement("li"); li.textContent = p + " ";
+      var del = document.createElement("button"); del.textContent = "retirer";
+      del.onclick = function(){ S.phrases.splice(i,1); save(); renderSettings(); };
+      li.appendChild(del); ul.appendChild(li);
+    });
+  }
+  $("setName").oninput = function(){ S.name = this.value.trim() || "toi"; save(); refreshTop(); };
+  $("setVoice").onchange = function(){ S.voice = this.checked; save(); refreshTop(); };
+  $("setVoiceName").onchange = function(){ S.voiceName = this.value; save(); speak("Tu es en sécurité. Je suis là.", true); };
+  $("setRate").oninput = function(){ S.rate = parseFloat(this.value); save(); renderVoiceSettings(); };
+  $("setRate").onchange = function(){ speak("Respire doucement. Tu fais de ton mieux.", true); };
+  $("voiceTest").onclick = function(){ speak("Tu es en sécurité, " + S.name + ". Je suis là. On respire ensemble, tout doucement.", true); };
+  $("changePin").onclick = function(){ go("pin"); pinSet("create1"); };
+  $("setPron").oninput = function(){ S.namePron = this.value.trim(); save(); };
+  $("pronTest").onclick = function(){ speak("Bravo " + S.name + " ! Tu as ramené le soleil.", true); };
+  $("addPhrase").onclick = function(){ var v = $("newPhrase").value.trim(); if (!v) return; S.phrases.push(v); $("newPhrase").value = ""; save(); renderSettings(); };
+  $("resetAll").onclick = function(){ if (confirm("Effacer le journal, les étoiles et les réglages ?")){ S = fresh(); save(); refreshTop(); renderLog(); renderSettings(); } };
+
+  $("voiceBtn").onclick = function(){ S.voice = !S.voice; save(); refreshTop(); if (S.voice) speak("La voix est activée."); else stopSpeech(); };
+  $("homeBtn").onclick = function(){ go("home"); };
+  $("stars").onclick = function(){ go("trophies"); };
+  $("popAgain").onclick = buildPops;
+  document.querySelectorAll("[data-go]").forEach(function(b){ b.onclick = function(){ go(b.dataset.go); }; });
+  document.querySelectorAll(".done-btn").forEach(function(b){ b.onclick = toolDone; });
+
+  $("welcomeOk").onclick = function(){ var v = $("welcomeName").value.trim(); if (!v) return; S.name = v; save(); refreshTop(); };
+  buildWeather(); buildChoices(); refreshTop();
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+}
+</script>
+</body>
+</html>

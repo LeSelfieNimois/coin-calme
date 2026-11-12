@@ -1,0 +1,7 @@
+Mon coin calme – version installable sur iPhone (gratuite)
+
+Mettre TOUS les fichiers de ce dossier en ligne, au même endroit
+(GitHub Pages, Netlify, ou votre hébergement web), en https.
+
+Pour une mise à jour : remplacer index.html, et changer
+"coin-calme-v1" en "coin-calme-v2" dans sw.js.
