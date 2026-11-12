@@ -52,7 +52,8 @@ body{
   font-size:18px; line-height:1.45; -webkit-tap-highlight-color:transparent;
 }
 body::before{ content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:10; background:var(--bg); }
-button{ font:inherit; color:inherit; cursor:pointer; }
+html{ touch-action:manipulation; -webkit-text-size-adjust:100%; }
+button{ font:inherit; color:inherit; cursor:pointer; touch-action:manipulation; -webkit-user-select:none; user-select:none; }
 button:focus-visible, input:focus-visible, textarea:focus-visible{ outline:3px solid var(--accent); outline-offset:3px; }
 .wrap{ max-width:560px; margin:0 auto; padding:12px 18px 40px; }
 header.top{
@@ -798,17 +799,61 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
       .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{20E3}]/gu, "")
       .replace(/[«»"]/g, "").replace(/…/g, ".").replace(/\s+([.!?,:])/g, "$1").replace(/\s+/g, " ").trim();
   }
+  // Voix naturelle : phrases pré-enregistrées (voix.mp3 + voix.json)
+  var VP = null, vq = [], vsrc = null, vtok = 0;
+  function nkey(s){ return String(s).toLowerCase().replace(/[’']/g, "'").replace(/[.,!?:;«»"…]/g, " ").replace(/\s+/g, " ").trim(); }
+  function currentEngine(){
+    if (S.engine === "claude" && ctts) return "claude";
+    if (S.engine === "device") return "device";
+    return VP ? "natural" : "device";
+  }
   function stopSpeech(){
+    vtok++; vq = [];
+    if (vsrc){ try { vsrc.onended = null; vsrc.stop(); } catch(e){} vsrc = null; }
     if (window.speechSynthesis) speechSynthesis.cancel();
     if (ctts) { try { ctts.stop(); } catch(e){} }
   }
-  function speak(t, force){
+  function deviceSay(text, cb){
+    if (!window.speechSynthesis){ if (cb) cb(); return; }
+    try {
+      var v = pickVoice(), u = new SpeechSynthesisUtterance(text);
+      u.lang = v ? v.lang : "fr-FR"; if (v) u.voice = v;
+      u.rate = S.rate || 0.85; u.pitch = 1; u.volume = 0.95;
+      if (cb){ u.onend = cb; u.onerror = cb; }
+      speechSynthesis.speak(u);
+    } catch(e){ if (cb) cb(); }
+  }
+  function playQueue(){
+    var tok = vtok;
+    (function next(){
+      if (tok !== vtok) return;
+      var it = vq.shift(); if (!it) return;
+      if (it.clip){
+        try {
+          var a = ac(), s = a.createBufferSource(); s.buffer = VP.buf; s.connect(a.destination);
+          s.onended = function(){ if (vsrc === s) vsrc = null; setTimeout(next, 140); };
+          vsrc = s; s.start(0, it.clip[0], it.clip[1]);
+        } catch(e){ next(); }
+      } else deviceSay(it.tts, function(){ setTimeout(next, 60); });
+    })();
+  }
+  function speak(t, force, deviceOnly){
     if ((!S.voice && !force)) return;
     if (pendingAnnounce && !force){ t = pendingAnnounce + ". " + t; pendingAnnounce = null; }
     var text = cleanSpeech(t); if (!text) return;
-    if (S.name && S.namePron) text = text.split(S.name).join(S.namePron);
     stopSpeech();
-    if (S.engine === "claude" && ctts){
+    var eng = currentEngine();
+    if (eng === "natural" && !deviceOnly){
+      var nt = text;
+      if (S.name){ var esc = S.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); nt = nt.replace(new RegExp("[ ,]*" + esc + "(?![A-Za-zÀ-ÿ])", "g"), ""); }
+      nt = nt.replace(/\s+([.!?,:])/g, "$1").replace(/^[.,!?:\s]+/, "").trim();
+      vq = nt.split(/(?<=[.!?])\s+/).filter(function(x){ return nkey(x); }).map(function(part){
+        var c = VP.map[nkey(part)]; return c ? { clip:c } : { tts:(S.namePron ? part : part) };
+      });
+      playQueue(); return;
+    }
+    if (S.name && S.namePron) text = text.split(S.name).join(S.namePron);
+    if (eng === "claude"){
       ctts.speak(text, { voice:S.cvoice || "rounded", rate:S.rate || 0.85, language:"fr" }).catch(function(){});
       return;
     }
@@ -832,13 +877,14 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
     }).catch(function(){});
   })();
   function renderVoiceSettings(){
-    $("engineField").hidden = !ctts;
-    var useClaude = S.engine === "claude" && ctts;
-    $("cVoiceField").hidden = !useClaude; $("dVoiceField").hidden = !!useClaude;
+    var eng = currentEngine();
+    $("engineField").hidden = false;
+    $("cVoiceField").hidden = eng !== "claude"; $("dVoiceField").hidden = eng !== "device";
     var eb = $("setEngine"); eb.innerHTML = "";
-    [["claude","Voix Claude (plus naturelle)"],["device","Voix de l’appareil"]].forEach(function(o){
-      var b = document.createElement("button"); b.className = "chip" + ((o[0] === "claude") === !!useClaude ? " on" : ""); b.textContent = o[1];
-      b.onclick = function(){ S.engine = o[0]; save(); renderVoiceSettings(); }; eb.appendChild(b);
+    var opts = []; if (VP) opts.push(["natural","Voix naturelle (conseillée)"]); opts.push(["device","Voix de l’appareil"]); if (ctts) opts.push(["claude","Voix Claude"]);
+    opts.forEach(function(o){
+      var b = document.createElement("button"); b.className = "chip" + (o[0] === eng ? " on" : ""); b.textContent = o[1];
+      b.onclick = function(){ S.engine = o[0]; save(); renderVoiceSettings(); speak("Tu es en sécurité. Je suis là.", true); }; eb.appendChild(b);
     });
     var cb = $("setCVoice"); cb.innerHTML = "";
     CVOICES.forEach(function(c){
@@ -950,7 +996,7 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
   function breathWords(){
     if (S.age === "petit") return { i:"Sens la fleur", e:"Souffle la bougie" };
     if (S.age === "grand") return { i:"Inspire", e:"Expire doucement" };
-    return { i:"Inspire par le nez", e:"Souffle doucement" };
+    return { i:"Inspire", e:"Souffle doucement" };
   }
   function explainText(){
     if (S.age === "petit") return "Inspirer, c’est comme sentir une fleur : l’air entre doucement par ton nez, et ton ventre se gonfle comme un ballon. Expirer, c’est comme souffler une bougie : l’air ressort tout doucement par ta bouche, et ton ventre se dégonfle. Quand la bulle grandit, tu sens la fleur. Quand elle rétrécit, tu souffles la bougie.";
@@ -981,7 +1027,7 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
       function tick(){
         k++;
         if (k > n){ next(); return; }
-        bubble.firstChild.textContent = String(k); bspeak(NUMS[k] || String(k));
+        bubble.firstChild.textContent = String(k); if (!(vsrc || (window.speechSynthesis && speechSynthesis.speaking))) bspeak(NUMS[k] || String(k));
         later(tick, step);
       }
       later(tick, step);
@@ -1106,11 +1152,16 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
   if (window.claude && window.claude.use){
     window.claude.use("dictation").then(function(d){
       dict = d; if (!d) return;
-      d.onPartial(function(r){ $("worry").value = micBase + r.text; });
-      d.onFinal(function(r){ micBase = micBase + r.text + " "; $("worry").value = micBase; });
+      d.onPartial(function(r){ $("worry").value = micBase + r.text; syncBalloon(); });
+      d.onFinal(function(r){ micBase = micBase + r.text + " "; $("worry").value = micBase; syncBalloon(); });
       d.onState(function(s){ listening = s.state !== "idle"; micUI(); });
     }).catch(function(){});
   }
+  function syncBalloon(){
+    var v = $("worry").value.trim(), b = $("balloonTxt");
+    b.textContent = v || "?"; b.style.fontSize = v.length > 70 ? "11px" : (v.length > 35 ? "13px" : "16px");
+  }
+  $("worry").addEventListener("input", syncBalloon);
   function micUI(){ $("micBtn").textContent = listening ? "⏹️ J’ai fini de parler" : "🎤 Dire mon souci"; }
   function micFallback(){
     listening = false; micUI();
@@ -1135,7 +1186,7 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
         sr.onresult = function(ev){
           var fin = "", tmp = "";
           for (var i = 0; i < ev.results.length; i++){ if (ev.results[i].isFinal) fin += ev.results[i][0].transcript + " "; else tmp += ev.results[i][0].transcript; }
-          $("worry").value = micBase + fin + tmp;
+          $("worry").value = micBase + fin + tmp; syncBalloon();
         };
         sr.onerror = function(){ sr = null; micFallback(); };
         sr.onend = function(){ sr = null; listening = false; micUI(); };
@@ -1494,7 +1545,7 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
       var s = document.createElement("small"); s.textContent = got ? "Gagné !" : ((i + 1) * 5 + " étoiles"); d.appendChild(s);
       g.appendChild(d);
     }
-    speak("Tu as " + S.stars + " étoiles. Encore " + inf.left + " pour gagner le trophée : " + inf.next.n + ".");
+    speak("Voici tes trophées.");
   };
   INIT.bravo = function(){
     $("bravoHead").textContent = "Bravo " + S.name + " !";
@@ -1634,7 +1685,7 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
   $("voiceTest").onclick = function(){ speak("Tu es en sécurité, " + S.name + ". Je suis là. On respire ensemble, tout doucement.", true); };
   $("changePin").onclick = function(){ go("pin"); pinSet("create1"); };
   $("setPron").oninput = function(){ S.namePron = this.value.trim(); save(); };
-  $("pronTest").onclick = function(){ speak("Bravo " + S.name + " ! Tu as ramené le soleil.", true); };
+  $("pronTest").onclick = function(){ speak("Bravo " + S.name + " ! Tu as ramené le soleil.", true, true); };
   $("addPhrase").onclick = function(){ var v = $("newPhrase").value.trim(); if (!v) return; S.phrases.push(v); $("newPhrase").value = ""; save(); renderSettings(); };
   $("resetAll").onclick = function(){ if (confirm("Effacer le journal, les étoiles et les réglages ?")){ S = fresh(); save(); refreshTop(); renderLog(); renderSettings(); } };
 
@@ -1645,6 +1696,14 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
   document.querySelectorAll("[data-go]").forEach(function(b){ b.onclick = function(){ go(b.dataset.go); }; });
   document.querySelectorAll(".done-btn").forEach(function(b){ b.onclick = toolDone; });
 
+  (function loadVoicePack(){
+    try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch(e){}
+    if (!window.fetch) return;
+    Promise.all([ fetch("voix.json").then(function(r){ return r.json(); }), fetch("voix.mp3").then(function(r){ return r.arrayBuffer(); }) ])
+      .then(function(res){ var a = ac(); return new Promise(function(ok, ko){ a.decodeAudioData(res[1], ok, ko); }).then(function(buf){ VP = { buf:buf, map:res[0] }; if ($("parent").classList.contains("on")) renderVoiceSettings(); }); })
+      .catch(function(){});
+    document.addEventListener("pointerdown", function(){ if (AC && AC.state !== "running") AC.resume(); }, { passive:true });
+  })();
   $("welcomeOk").onclick = function(){ var v = $("welcomeName").value.trim(); if (!v) return; S.name = v; save(); refreshTop(); };
   buildWeather(); buildChoices(); refreshTop();
 })();
