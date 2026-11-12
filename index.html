@@ -655,7 +655,8 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
         <div class="field" id="dVoiceField"><label for="setVoiceName">Voix de l’appareil</label><select id="setVoiceName"></select>
           <p class="small" style="margin:6px 0 0" id="voiceHelp">Sur iPhone et iPad, des voix bien plus naturelles sont disponibles gratuitement : Réglages › Accessibilité › Contenu énoncé › Voix › Français, puis téléchargez une voix marquée « Améliorée » ou « Premium ». Rechargez ensuite cette page, et elle apparaîtra ici.</p></div>
         <div class="field"><label for="setRate">Vitesse : <span id="rateVal"></span></label><input type="range" id="setRate" min="0.7" max="1.1" step="0.05"></div>
-        <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn soft" id="voiceTest">▶ Écouter un exemple</button></div>
+        <div class="row" style="justify-content:flex-start;margin-top:0"><button class="btn soft" id="voiceTest">▶ Écouter un exemple</button><button class="btn soft" id="soundTest">🔧 Tester le son</button></div>
+        <p class="small" id="soundDiag" style="margin:6px 0 0"></p>
       </div>
       <div class="field">
         <label for="newPhrase">Ajouter un mot doux personnel</label>
@@ -675,7 +676,7 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
 (function(){
   "use strict";
   var KEY = "coincalme.v1";
-  function fresh(){ return { name:"", namePron:"", age:"moyen", voice:false, engine:"", cvoice:"rounded", voiceName:"", rate:0.85, stars:0, log:[], phrases:[], plan:[], custom:[], signs:[] }; }
+  function fresh(){ return { name:"", namePron:"", age:"moyen", voice:true, engine:"", cvoice:"rounded", voiceName:"", rate:0.85, stars:0, log:[], phrases:[], plan:[], custom:[], signs:[] }; }
   var S = fresh();
   try { var raw = localStorage.getItem(KEY); if (raw) { var o = JSON.parse(raw); for (var k in o) S[k] = o[k]; } } catch(e){}
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
@@ -827,7 +828,7 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
       .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}\u{20E3}]/gu, "")
       .replace(/[«»"]/g, "").replace(/…/g, ".").replace(/\s+([.!?,:])/g, "$1").replace(/\s+/g, " ").trim();
   }
-  // Voix naturelle : phrases pré-enregistrées (voix.mp3 + voix.json)
+  // Voix naturelle : phrases pré-enregistrées (voix-clips.json)
   var VP = null, vq = [], vsrc = null, vtok = 0;
   function nkey(s){ return String(s).toLowerCase().replace(/[’']/g, "'").replace(/[.,!?:;«»"…]/g, " ").replace(/\s+/g, " ").trim(); }
   function currentEngine(){
@@ -851,17 +852,35 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
       speechSynthesis.speak(u);
     } catch(e){ if (cb) cb(); }
   }
+  var clipCache = {}, clipOrder = [];
+  function clipBuffer(k){
+    if (clipCache[k]) return clipCache[k];
+    var p = new Promise(function(ok){
+      try {
+        var bin = atob(VP.map[k]), u = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+        ac().decodeAudioData(u.buffer, function(b){ ok(b); }, function(){ ok(null); });
+      } catch(e){ ok(null); }
+    });
+    clipCache[k] = p; clipOrder.push(k);
+    if (clipOrder.length > 40){ delete clipCache[clipOrder.shift()]; }
+    return p;
+  }
   function playQueue(){
     var tok = vtok;
     (function next(){
       if (tok !== vtok) return;
       var it = vq.shift(); if (!it) return;
       if (it.clip){
-        try {
-          var a = ac(), s = a.createBufferSource(); s.buffer = VP.buf; s.connect(a.destination);
-          s.onended = function(){ if (vsrc === s) vsrc = null; setTimeout(next, 140); };
-          vsrc = s; s.start(0, it.clip[0], it.clip[1]);
-        } catch(e){ next(); }
+        clipBuffer(it.clip).then(function(buf){
+          if (tok !== vtok) return;
+          if (!buf){ deviceSay(it.text, function(){ setTimeout(next, 60); }); return; }
+          try {
+            var a = ac(), s = a.createBufferSource(); s.buffer = buf; s.connect(a.destination);
+            s.onended = function(){ if (vsrc === s) vsrc = null; setTimeout(next, 140); };
+            vsrc = s; s.start(0);
+          } catch(e){ next(); }
+        });
       } else deviceSay(it.tts, function(){ setTimeout(next, 60); });
     })();
   }
@@ -876,7 +895,7 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
       if (S.name){ var esc = S.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); nt = nt.replace(new RegExp("[ ,]*" + esc + "(?![A-Za-zÀ-ÿ])", "g"), ""); }
       nt = nt.replace(/\s+([.!?,:])/g, "$1").replace(/^[.,!?:\s]+/, "").trim();
       vq = nt.split(/(?<=[.!?])\s+/).filter(function(x){ return nkey(x); }).map(function(part){
-        var c = VP.map[nkey(part)]; return c ? { clip:c } : { tts:(S.namePron ? part : part) };
+        var k = nkey(part); return VP.map[k] ? { clip:k, text:part } : { tts:part };
       });
       playQueue(); return;
     }
@@ -1360,14 +1379,13 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
     var a; try { a = ac(); } catch(e){ return; }
     var def = null; SOUNDS.forEach(function(s){ if (s.k === kind) def = s; });
     if (def && def.f){
-      var req = ++sndReq; curSound = kind; refreshSoundUI();
-      loadSnd(def).then(function(buf){
-        if (req !== sndReq || curSound !== kind) return;
-        if (!buf){ synthSound(kind === "fire" ? "soft" : (kind === "birds" ? "wind" : kind)); return; }
-        var t2 = a.currentTime, m = a.createGain(), s = a.createBufferSource();
-        s.buffer = buf; s.loop = true; s.loopStart = 0.08; s.loopEnd = buf.duration - 0.08;
-        m.gain.setValueAtTime(0, t2); m.gain.linearRampToValueAtTime(1, t2 + 2); s.connect(m); m.connect(a.destination); s.start(0, 0.08);
-        snd = { master:m, nodes:[m, s] }; curSound = kind; refreshSoundUI();
+      var req = ++sndReq, el = new Audio(def.f);
+      el.loop = true; el.preload = "auto"; el.setAttribute("playsinline", "");
+      snd = { el:el }; curSound = kind; refreshSoundUI();
+      var pr = el.play();
+      if (pr && pr.catch) pr.catch(function(){
+        if (req !== sndReq) return;
+        snd = null; synthSound(kind === "fire" ? "soft" : (kind === "birds" ? "wind" : kind));
       });
       return;
     }
@@ -1397,6 +1415,7 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
     sndReq++;
     if (!snd){ if (curSound){ curSound = null; refreshSoundUI(); } return; }
     var s = snd; snd = null; curSound = null;
+    if (s.el){ try { s.el.pause(); s.el.removeAttribute("src"); s.el.load(); } catch(e){} refreshSoundUI(); return; }
     try { var t = AC.currentTime; s.master.gain.cancelScheduledValues(t); s.master.gain.setValueAtTime(s.master.gain.value, t); s.master.gain.linearRampToValueAtTime(0, t + .5); } catch(e){}
     setTimeout(function(){ s.nodes.forEach(function(n){ try { if (n.stop) n.stop(); } catch(e){} try { n.disconnect(); } catch(e){} }); }, 650);
     refreshSoundUI();
@@ -1733,6 +1752,17 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
   $("setVoiceName").onchange = function(){ S.voiceName = this.value; save(); speak("Tu es en sécurité. Je suis là.", true); };
   $("setRate").oninput = function(){ S.rate = parseFloat(this.value); save(); renderVoiceSettings(); };
   $("setRate").onchange = function(){ speak("Respire doucement. Tu fais de ton mieux.", true); };
+  $("soundTest").onclick = function(){
+    unlockAudio();
+    var a = AC, lines = [];
+    lines.push("Audio : " + (a ? a.state : "non démarré"));
+    lines.push("Voix naturelle : " + (VP ? "chargée (" + Object.keys(VP.map).length + " phrases)" : ("non chargée" + (VPerr ? " – " + VPerr : ""))));
+    lines.push("Voix active : " + ({natural:"naturelle", device:"appareil", claude:"Claude"})[currentEngine()]);
+    lines.push("Lecture à voix haute : " + (S.voice ? "activée" : "désactivée (bouton 🔈 en haut)"));
+    $("soundDiag").textContent = lines.join(" · ");
+    try { var o = a.createOscillator(), g = a.createGain(); o.frequency.value = 660; g.gain.setValueAtTime(.2, a.currentTime); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .4); o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime + .45); } catch(e){}
+    setTimeout(function(){ speak("Tu es en sécurité. Je suis là.", true); }, 600);
+  };
   $("voiceTest").onclick = function(){ speak("Tu es en sécurité, " + S.name + ". Je suis là. On respire ensemble, tout doucement.", true); };
   $("changePin").onclick = function(){ go("pin"); pinSet("create1"); };
   $("setPron").oninput = function(){ S.namePron = this.value.trim(); save(); };
@@ -1747,13 +1777,25 @@ button.chip.on{ border-color:var(--accent); background:color-mix(in srgb, var(--
   document.querySelectorAll("[data-go]").forEach(function(b){ b.onclick = function(){ go(b.dataset.go); }; });
   document.querySelectorAll(".done-btn").forEach(function(b){ b.onclick = toolDone; });
 
+  var audioUnlocked = false, VPerr = "";
+  function unlockAudio(){
+    try {
+      var a = ac();
+      if (a.state !== "running") a.resume();
+      if (!audioUnlocked){
+        var b = a.createBuffer(1, 1, 22050), s = a.createBufferSource(); s.buffer = b; s.connect(a.destination); s.start(0);
+        audioUnlocked = true;
+      }
+    } catch(e){}
+  }
+  ["touchend", "click", "keydown"].forEach(function(ev){ document.addEventListener(ev, unlockAudio, true); });
+  document.addEventListener("visibilitychange", function(){ if (!document.hidden && AC && AC.state !== "running") { try { AC.resume(); } catch(e){} } });
   (function loadVoicePack(){
     try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch(e){}
     if (!window.fetch) return;
-    Promise.all([ fetch("voix.json").then(function(r){ return r.json(); }), fetch("voix.mp3").then(function(r){ return r.arrayBuffer(); }) ])
-      .then(function(res){ var a = ac(); return new Promise(function(ok, ko){ a.decodeAudioData(res[1], ok, ko); }).then(function(buf){ VP = { buf:buf, map:res[0] }; if ($("parent").classList.contains("on")) renderVoiceSettings(); }); })
-      .catch(function(){});
-    document.addEventListener("pointerdown", function(){ if (AC && AC.state !== "running") AC.resume(); }, { passive:true });
+    fetch("voix-clips.json").then(function(r){ if (!r.ok) throw new Error("fichier voix-clips.json introuvable (" + r.status + ")"); return r.json(); })
+      .then(function(map){ VP = { map:map }; if ($("parent").classList.contains("on")) renderVoiceSettings(); })
+      .catch(function(e){ VPerr = String(e && e.message || e); });
   })();
   $("welcomeOk").onclick = function(){ var v = $("welcomeName").value.trim(); if (!v) return; S.name = v; save(); refreshTop(); };
   buildWeather(); buildChoices(); refreshTop();
